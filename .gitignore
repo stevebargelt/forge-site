@@ -1,3 +1,18 @@
 # forge — per-developer claude-code config (machine-local, not committed)
 .claude/settings.local.json
 .claude/commands/
+
+# Astro
+dist/
+.astro/
+
+# Build outputs
+.vercel/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local

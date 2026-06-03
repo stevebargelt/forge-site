@@ -1,0 +1,76 @@
+/*
+ * Starlight Bridge
+ * Maps Forge design tokens onto Starlight's CSS custom property slots.
+ * All --sl-* values here derive from --forge-* tokens — no standalone values.
+ *
+ * Starlight theming reference:
+ * https://starlight.astro.build/guides/css-and-tailwind/#theming
+ */
+
+@import './tokens.css';
+
+/* ── Light mode ──────────────────────────────────────────────────────── */
+/*
+ * Mirror Starlight's own selector (:root[data-theme='light'], specificity 0,2,0).
+ * Equal specificity means cascade order wins — customCss loads after Starlight's
+ * default theme (sheetIdx 41 > sheetIdx 0 in the dev bundle), so our rules take
+ * precedence.
+ */
+:root,
+:root[data-theme='light'] {
+  /* Accent slots */
+  --sl-color-accent-low:  var(--forge-color-accent-subtle);
+  --sl-color-accent:      var(--forge-color-accent);
+  --sl-color-accent-high: var(--forge-color-accent-text);
+
+  /* Text */
+  --sl-color-white: var(--forge-color-text-strong);
+  --sl-color-gray-1: var(--forge-color-text);
+  --sl-color-gray-2: var(--forge-color-text-muted);
+  --sl-color-gray-5: var(--forge-color-border);
+  --sl-color-gray-6: var(--forge-color-surface-raised);
+  --sl-color-gray-7: var(--forge-color-surface);
+
+  /* Background */
+  --sl-color-bg:        var(--forge-color-surface);
+  --sl-color-bg-nav:    var(--forge-color-surface);
+  --sl-color-bg-sidebar: var(--forge-color-surface-raised);
+
+  /* Typography */
+  --sl-font: var(--forge-font-family-body);
+  --sl-font-system: var(--forge-font-family-body);
+  --sl-font-mono: var(--forge-font-family-mono);
+  --sl-text-2xs: var(--forge-font-size-xs);
+  --sl-text-xs:  var(--forge-font-size-xs);
+  --sl-text-sm:  var(--forge-font-size-sm);
+  --sl-text-base: var(--forge-font-size-base);
+  --sl-text-lg:  var(--forge-font-size-lg);
+  --sl-text-xl:  var(--forge-font-size-xl);
+  --sl-text-2xl: var(--forge-font-size-2xl);
+  --sl-text-3xl: var(--forge-font-size-3xl);
+  --sl-text-4xl: var(--forge-font-size-4xl);
+}
+
+/* ── Dark mode ───────────────────────────────────────────────────────── */
+/*
+ * Mirror Starlight's dark selector for cascade-order-based override.
+ */
+:root[data-theme='dark'] {
+  /* Accent slots — all from dark forge token overrides */
+  --sl-color-accent-low:  var(--forge-color-accent-subtle);
+  --sl-color-accent:      var(--forge-color-accent);
+  --sl-color-accent-high: var(--forge-color-accent-text);
+
+  /* Text */
+  --sl-color-white: var(--forge-color-text-strong);
+  --sl-color-gray-1: var(--forge-color-text);
+  --sl-color-gray-2: var(--forge-color-text-muted);
+  --sl-color-gray-5: var(--forge-color-border);
+  --sl-color-gray-6: var(--forge-color-surface-raised);
+  --sl-color-gray-7: var(--forge-color-surface);
+
+  /* Background */
+  --sl-color-bg:         var(--forge-color-surface);
+  --sl-color-bg-nav:     var(--forge-color-surface);
+  --sl-color-bg-sidebar: var(--forge-color-surface-raised);
+}

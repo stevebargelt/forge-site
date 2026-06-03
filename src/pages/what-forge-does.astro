@@ -1,0 +1,421 @@
+---
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+---
+
+<MarketingLayout
+  title="What Forge does"
+  description="Forge orchestrates teams of AI agents to complete complex engineering work — reliably, transparently, and at a pace no single model can match."
+>
+  <article class="page-article">
+
+    <header class="page-hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">The short version</p>
+        <h1 class="hero-headline">
+          Forge sends AI agents<br class="headline-break" /> to do your engineering work.
+        </h1>
+        <p class="hero-subhead">
+          You describe what you want. Forge breaks it into a plan, assigns the right specialists,
+          reviews the results, and hands you code that has already been tested.
+        </p>
+      </div>
+    </header>
+
+    <section class="content-section" aria-labelledby="the-problem">
+      <div class="section-inner">
+        <h2 id="the-problem" class="section-heading">The problem Forge solves</h2>
+        <p>
+          Modern software teams run on checklists that never quite stay checked.
+          A feature request becomes a planning doc, a planning doc becomes a coding task,
+          a coding task becomes a code review, a code review becomes a test run, a test run
+          becomes a fix, and the fix starts the cycle again. Each handoff takes time and
+          attention — even when everyone involved is talented and motivated.
+        </p>
+        <p>
+          AI assistants help with individual steps. But they hand everything back to you
+          between steps. You become the conductor, orchestrating a set of tools that each
+          require your active attention. That is still a lot of work.
+        </p>
+        <p>
+          Forge is built for teams that want to move further down the checklist before
+          they hand back control. It doesn't replace the human decision-maker — it
+          handles the work between decisions so you can focus on the decisions themselves.
+        </p>
+      </div>
+    </section>
+
+    <section class="content-section content-section--alt" aria-labelledby="what-it-does">
+      <div class="section-inner">
+        <h2 id="what-it-does" class="section-heading">What Forge actually does</h2>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke="var(--forge-color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="m9 12 2 2 4-4" stroke="var(--forge-color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="card-heading">Plans before it acts</h3>
+            <p class="card-body">
+              A dedicated planning agent reads the brief and writes a step-by-step implementation plan.
+              You can review and approve it before any code is written. Forge never
+              starts building without a plan.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="3" stroke="var(--forge-color-accent)" stroke-width="2"/>
+                <circle cx="6" cy="17" r="3" stroke="var(--forge-color-accent)" stroke-width="2"/>
+                <circle cx="18" cy="17" r="3" stroke="var(--forge-color-accent)" stroke-width="2"/>
+                <path d="M12 11v3M9 17h6M8.5 10.5 6.5 14.5M15.5 10.5l2 4" stroke="var(--forge-color-accent)" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="card-heading">Uses the right agent for each job</h3>
+            <p class="card-body">
+              Different kinds of work go to different kinds of agents: one for architecture,
+              one for writing code, one for writing tests, one for adversarial review.
+              Each specialist agent gets exactly the context it needs — nothing more.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="var(--forge-color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="m9 12 2 2 4-4" stroke="var(--forge-color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="card-heading">Reviews its own output</h3>
+            <p class="card-body">
+              "Red" agents read completed work specifically looking for problems —
+              security issues, logical errors, places where the code diverges from the plan.
+              They are adversarial by design. Work only advances when it passes the review.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" stroke="var(--forge-color-accent)" stroke-width="2"/>
+                <path d="M12 4v2M12 18v2M4 12H2M22 12h-2M6.34 6.34 4.93 4.93M19.07 19.07l-1.41-1.41M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" stroke="var(--forge-color-accent)" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="card-heading">Keeps a complete record</h3>
+            <p class="card-body">
+              Every decision, every agent output, and every gate approval is stored in
+              a local database. You can inspect exactly what happened, why a step
+              was approved or rejected, and what each agent saw when it worked.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" aria-labelledby="who-its-for">
+      <div class="section-inner">
+        <h2 id="who-its-for" class="section-heading">Who Forge is for</h2>
+        <div class="audience-list">
+          <div class="audience-item">
+            <h3 class="audience-heading">Engineering teams</h3>
+            <p>
+              Forge handles the routine end of the coding backlog — bug fixes, targeted
+              features, test coverage, routine refactors — freeing senior engineers for
+              architectural decisions and high-judgment work.
+            </p>
+          </div>
+          <div class="audience-item">
+            <h3 class="audience-heading">Technical leads and managers</h3>
+            <p>
+              Every Forge run produces a structured record of the plan, the work, and the
+              review. That record is auditable without reading code. You can see what was
+              built, what was rejected, and why — without being in every code review.
+            </p>
+          </div>
+          <div class="audience-item">
+            <h3 class="audience-heading">Stakeholders and product teams</h3>
+            <p>
+              Forge gives you reliable estimates of what "a feature" actually involves.
+              The plan phase surfaces technical scope before work starts, not after.
+              You get more predictable outcomes and cleaner communication between
+              product and engineering.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section content-section--alt" aria-labelledby="not-magic">
+      <div class="section-inner section-inner--narrow">
+        <h2 id="not-magic" class="section-heading">What Forge is not</h2>
+        <p>
+          Forge is not a replacement for senior engineers. It is a multiplier.
+          It handles the work that benefits from automation — structured, repeatable,
+          reviewable work — and surfaces the decisions that genuinely need human judgment.
+        </p>
+        <p>
+          Forge does not connect to the internet on your behalf, manage deployments,
+          or touch infrastructure. It works inside your repository, with your toolchain,
+          on the code you point it at.
+        </p>
+        <p>
+          It is also not a black box. You can see every step, read every agent's output,
+          and override any gate decision. The control stays with you.
+        </p>
+      </div>
+    </section>
+
+    <section class="content-section cta-section" aria-labelledby="next-steps">
+      <div class="section-inner section-inner--narrow section-inner--centered">
+        <h2 id="next-steps" class="section-heading">Learn more</h2>
+        <p class="cta-lead">
+          Ready to go deeper? The engineering page explains the mechanics —
+          runs, tasks, gates, and agents — in concrete terms.
+        </p>
+        <div class="cta-links">
+          <a href="/how-forge-runs-work" class="cta-primary">How Forge runs work &rarr;</a>
+          <a href="/docs/" class="cta-secondary">Read the docs</a>
+        </div>
+      </div>
+    </section>
+
+  </article>
+</MarketingLayout>
+
+<style>
+  .page-article {
+    color: var(--forge-color-text);
+    font-family: var(--forge-font-family-body);
+    font-size: var(--forge-font-size-base);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Hero ── */
+
+  .page-hero {
+    background: var(--forge-color-surface);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-20) var(--forge-space-6) var(--forge-space-16);
+  }
+
+  .hero-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .hero-headline {
+    font-family: var(--forge-font-family-display);
+    font-size: clamp(var(--forge-font-size-3xl), 5vw, var(--forge-font-size-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .headline-break {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .headline-break {
+      display: block;
+    }
+  }
+
+  .hero-subhead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    max-width: 52ch;
+    margin: 0;
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Sections ── */
+
+  .content-section {
+    padding: var(--forge-space-16) var(--forge-space-6);
+  }
+
+  .content-section--alt {
+    background: var(--forge-color-surface-raised);
+  }
+
+  .section-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .section-inner--narrow {
+    max-width: 70ch;
+  }
+
+  .section-inner--centered {
+    text-align: center;
+  }
+
+  .section-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-8);
+  }
+
+  .content-section p {
+    margin: 0 0 var(--forge-space-4);
+    color: var(--forge-color-text-muted);
+  }
+
+  .content-section p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ── Card grid ── */
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--forge-space-4);
+    margin-top: var(--forge-space-8);
+  }
+
+  .card {
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    padding: var(--forge-space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--forge-radius-md);
+    background: var(--forge-color-accent-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+    margin: 0;
+  }
+
+  .card-body {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: 0;
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Audience list ── */
+
+  .audience-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-8);
+    margin-top: var(--forge-space-4);
+  }
+
+  .audience-item {
+    padding-left: var(--forge-space-6);
+    border-left: 3px solid var(--forge-color-accent-subtle);
+  }
+
+  .audience-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-lg);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-2);
+  }
+
+  .audience-item p {
+    margin: 0;
+    color: var(--forge-color-text-muted);
+  }
+
+  /* ── CTA section ── */
+
+  .cta-section {
+    background: var(--forge-color-surface);
+  }
+
+  .cta-lead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    margin: 0 0 var(--forge-space-8);
+  }
+
+  .cta-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--forge-space-3);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .cta-primary {
+    display: inline-block;
+    padding: var(--forge-space-3) var(--forge-space-6);
+    background: var(--forge-color-accent);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--forge-radius-md);
+    font-weight: 600;
+    font-size: var(--forge-font-size-base);
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .cta-primary:hover {
+    background: var(--forge-color-accent-bright);
+    transform: translateY(-1px);
+  }
+
+  .cta-primary:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 3px;
+  }
+
+  .cta-secondary {
+    display: inline-block;
+    padding: var(--forge-space-3) var(--forge-space-6);
+    color: var(--forge-color-text-muted);
+    text-decoration: none;
+    border-radius: var(--forge-radius-md);
+    font-weight: 500;
+    font-size: var(--forge-font-size-base);
+    border: 1px solid var(--forge-color-border);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .cta-secondary:hover {
+    color: var(--forge-color-text-strong);
+    border-color: var(--forge-color-accent);
+  }
+
+  .cta-secondary:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 3px;
+  }
+</style>

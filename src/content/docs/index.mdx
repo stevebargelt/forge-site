@@ -1,0 +1,38 @@
+---
+title: Forge Documentation
+description: Reference documentation for Forge, the AI-native multi-agent orchestration platform.
+slug: docs
+template: splash
+hero:
+  tagline: AI-native multi-agent orchestration for engineering teams.
+  actions:
+    - text: How Forge runs work
+      link: /how-forge-runs-work
+      icon: right-arrow
+    - text: What Forge does
+      link: /what-forge-does
+      icon: external
+      variant: minimal
+---
+
+## Welcome to Forge
+
+Forge orchestrates teams of AI agents to complete complex engineering work — reliably, transparently, and at a pace no single model can match.
+
+### Core concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Runs** | Top-level units of work — a feature, fix, or investigation |
+| **Tasks** | Individual steps within a run, each owned by a specialist agent |
+| **Gates** | Checkpoints that require review (human or automated) before work advances |
+| **Reds** | Adversarial reviewer agents that look for problems in completed work |
+| **Agents** | Specialist containers: architect, engineer, test-engineer, red, and more |
+| **Blackboard** | The SQLite database that records every decision and output |
+
+### Documentation sections
+
+- **[How Forge runs work](/how-forge-runs-work)** — Conceptual map of the execution model for engineers
+- **[What Forge does](/what-forge-does)** — Plain-language overview for stakeholders
+
+For canonical CLI flags, workflow YAML schemas, and operator setup guides, see the full Forge repository documentation.

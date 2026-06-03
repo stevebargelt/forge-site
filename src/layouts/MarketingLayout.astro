@@ -1,0 +1,193 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Forge — AI-native multi-agent orchestration for engineering teams.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} — Forge</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/" class="nav-wordmark" aria-label="Forge home">
+          <svg class="nav-logo" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="6" fill="var(--forge-color-accent)"/>
+            <path d="M7 8h14M7 14h10M7 20h7" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span class="nav-wordmark-text">Forge</span>
+        </a>
+        <ul class="nav-links" role="list">
+          <li><a href="/what-forge-does" class="nav-link">What Forge does</a></li>
+          <li><a href="/how-forge-runs-work" class="nav-link">How it works</a></li>
+          <li><a href="/docs/" class="nav-link">Docs</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-copy">
+          &copy; {new Date().getFullYear()} Forge. Built for engineers.
+        </p>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="/docs/" class="footer-link">Documentation</a>
+          <a href="/what-forge-does" class="footer-link">What Forge does</a>
+          <a href="/how-forge-runs-work" class="footer-link">How it works</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--forge-color-surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--forge-color-border);
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    padding: 0 var(--forge-space-6);
+    height: 60px;
+    gap: var(--forge-space-8);
+  }
+
+  .nav-wordmark {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-2);
+    text-decoration: none;
+    color: var(--forge-color-text-strong);
+    font-weight: 700;
+    font-size: var(--forge-font-size-lg);
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  .nav-wordmark:hover {
+    color: var(--forge-color-accent);
+  }
+
+  .nav-logo {
+    flex-shrink: 0;
+  }
+
+  .nav-wordmark-text {
+    font-family: var(--forge-font-family-display);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    display: inline-block;
+    padding: 6px var(--forge-space-3);
+    color: var(--forge-color-text-muted);
+    text-decoration: none;
+    font-size: var(--forge-font-size-sm);
+    font-weight: 500;
+    border-radius: var(--forge-radius-md);
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--forge-color-text-strong);
+    background-color: var(--forge-color-surface-raised);
+  }
+
+  .nav-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+  }
+
+  main {
+    min-height: calc(100svh - 60px - 80px);
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--forge-color-border);
+    background: var(--forge-color-surface-sunken);
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    padding: var(--forge-space-5) var(--forge-space-6);
+    gap: var(--forge-space-4);
+    flex-wrap: wrap;
+  }
+
+  .footer-copy {
+    margin: 0;
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: var(--forge-space-4);
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .footer-link:hover {
+    color: var(--forge-color-accent);
+  }
+
+  .footer-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 600px) {
+    .nav-links {
+      display: none;
+    }
+
+    .footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

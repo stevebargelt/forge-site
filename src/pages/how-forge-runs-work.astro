@@ -1,0 +1,639 @@
+---
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+
+// Canonical Forge documentation links — update these when the docs move.
+// These are the single source of truth for outbound references on this page.
+const DOCS = {
+  root:       '/docs/',
+  runs:       '/docs/concepts/runs/',
+  tasks:      '/docs/concepts/tasks/',
+  gates:      '/docs/concepts/gates/',
+  reds:       '/docs/concepts/reds/',
+  agents:     '/docs/concepts/agents/',
+  blackboard: '/docs/concepts/blackboard/',
+  workflows:  '/docs/reference/workflows/',
+  cli:        '/docs/reference/cli/',
+} as const;
+---
+
+<MarketingLayout
+  title="How Forge runs work"
+  description="A conceptual map of Forge internals for engineers: runs, tasks, gates, reds, agents, and the SQLite blackboard."
+>
+  <article class="page-article">
+
+    <header class="page-hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">Engineer reference</p>
+        <h1 class="hero-headline">How Forge runs work</h1>
+        <p class="hero-subhead">
+          A conceptual map of the Forge execution model — the six moving parts you need to understand
+          before everything else clicks into place.
+        </p>
+        <p class="hero-meta">
+          This page explains the concepts. For CLI flags, YAML schema, and workflow definitions,
+          see the <a href={DOCS.root} class="inline-link">full documentation</a>.
+        </p>
+      </div>
+    </header>
+
+    <nav class="toc-nav" aria-label="On this page">
+      <div class="toc-inner">
+        <p class="toc-label">On this page</p>
+        <ol class="toc-list" role="list">
+          <li><a href="#runs" class="toc-link">Runs</a></li>
+          <li><a href="#tasks" class="toc-link">Tasks</a></li>
+          <li><a href="#gates" class="toc-link">Gates</a></li>
+          <li><a href="#reds" class="toc-link">Reds</a></li>
+          <li><a href="#agents" class="toc-link">Agents</a></li>
+          <li><a href="#blackboard" class="toc-link">The blackboard</a></li>
+        </ol>
+      </div>
+    </nav>
+
+    <div class="content-body">
+      <div class="content-inner">
+
+        <section class="concept-section" id="runs" aria-labelledby="runs-heading">
+          <div class="concept-label" aria-hidden="true">01</div>
+          <h2 id="runs-heading" class="concept-heading">Runs</h2>
+          <p>
+            A <strong>run</strong> is the top-level unit of work in Forge. You create one by describing
+            what you want built — a feature request, a bug fix, a refactor — and Forge orchestrates
+            everything else from there.
+          </p>
+          <p>
+            A run has a lifecycle: it starts, moves through phases (plan, build, verify, review),
+            pauses at decision points, and eventually reaches a terminal state (complete, failed, or
+            cancelled). The lifecycle is deterministic: the same brief, the same workflow, the same
+            model policy will produce the same phase sequence every time.
+          </p>
+          <p>
+            Runs are identified by a stable ID that threads through every piece of state the run
+            produces — tasks, agent outputs, gate decisions, test results. That ID is what you pass
+            when you want to watch, advance, or inspect a run in progress.
+          </p>
+          <div class="concept-ref">
+            <a href={DOCS.runs} class="concept-ref-link">Runs reference &rarr;</a>
+          </div>
+        </section>
+
+        <section class="concept-section" id="tasks" aria-labelledby="tasks-heading">
+          <div class="concept-label" aria-hidden="true">02</div>
+          <h2 id="tasks-heading" class="concept-heading">Tasks</h2>
+          <p>
+            A <strong>task</strong> is the unit of agent work within a run. Each phase of a run is
+            composed of one or more tasks. A planning phase produces one task; a build phase in a
+            fan-out configuration might run several tasks in parallel, each handled by a different
+            agent container.
+          </p>
+          <p>
+            Tasks are scoped. Each task agent receives exactly the context it needs — no more — so
+            it cannot accidentally stomp on work happening in a sibling task. The task's inputs,
+            outputs, and status are all recorded and addressable by the task's stable ID.
+          </p>
+          <p>
+            Task results accumulate in the blackboard (more on that below), where later tasks can
+            read what earlier tasks produced. The dependency order between tasks is defined by the
+            workflow, not negotiated dynamically.
+          </p>
+          <div class="concept-ref">
+            <a href={DOCS.tasks} class="concept-ref-link">Tasks reference &rarr;</a>
+          </div>
+        </section>
+
+        <section class="concept-section" id="gates" aria-labelledby="gates-heading">
+          <div class="concept-label" aria-hidden="true">03</div>
+          <h2 id="gates-heading" class="concept-heading">Gates</h2>
+          <p>
+            A <strong>gate</strong> is a decision point between run phases. A run does not advance
+            from planning to building, or from building to testing, without passing through a gate.
+          </p>
+          <p>
+            Gates come in two modes. An <em>auto gate</em> is evaluated programmatically — Forge
+            reads the previous phase's output, applies the configured criteria, and advances or
+            blocks automatically. A <em>human gate</em> pauses the run and waits for an explicit
+            approval. You inspect the artifact, decide, and call <code>forge gate &lt;taskId&gt; --advance</code> or <code>--reject</code>.
+          </p>
+          <p>
+            The gate is the leverage point. By placing a human gate at the plan phase, you get to
+            read and approve the implementation plan before any code is written. That's the moment
+            when the cost of changing direction is lowest.
+          </p>
+          <div class="concept-ref">
+            <a href={DOCS.gates} class="concept-ref-link">Gates reference &rarr;</a>
+          </div>
+        </section>
+
+        <section class="concept-section" id="reds" aria-labelledby="reds-heading">
+          <div class="concept-label" aria-hidden="true">04</div>
+          <h2 id="reds-heading" class="concept-heading">Reds</h2>
+          <p>
+            A <strong>red</strong> is an adversarial review agent. Where implementer agents build
+            things, red agents are chartered to find problems — bugs, security issues, deviations
+            from the plan, missing edge cases.
+          </p>
+          <p>
+            Reds are specialists. There are wide reds (general correctness), narrow reds
+            (file-level scrutiny), security reds (threat modeling and vulnerability analysis),
+            frontend reds (accessibility and rendering), and backend reds (data integrity and
+            API contracts). A run's workflow defines which reds run and in what order.
+          </p>
+          <p>
+            The red gate is a verdict gate. A red returns a verdict — <em>pass</em>, <em>warn</em>,
+            or <em>block</em> — with findings. A block stops the run and surfaces the findings for
+            human review. A warn is recorded but does not stop progress. The orchestrator decides
+            whether to override a block; the audit trail records the decision.
+          </p>
+          <div class="concept-ref">
+            <a href={DOCS.reds} class="concept-ref-link">Reds reference &rarr;</a>
+          </div>
+        </section>
+
+        <section class="concept-section" id="agents" aria-labelledby="agents-heading">
+          <div class="concept-label" aria-hidden="true">05</div>
+          <h2 id="agents-heading" class="concept-heading">Agents</h2>
+          <p>
+            An <strong>agent</strong> in Forge is a Docker container running a Claude Code session
+            seeded with a role-specific prompt. The container gets a read-write mount of your
+            project, a task brief, and the outputs of prior tasks it depends on. It runs to
+            completion, writes a structured result to <code>result.json</code>, and exits.
+          </p>
+          <p>
+            The agent model is stateless between tasks. Each container starts clean, does its work,
+            and produces a structured artifact. Forge provides the state continuity; the agents
+            provide the work. This design means you can run ten agents in parallel without them
+            interfering with each other.
+          </p>
+          <p>
+            Agents are scoped by discipline. A frontend specialist agent gets a seed prompt tuned
+            for UI and accessibility work; a security advisor gets a threat-modeling prompt; a
+            test engineer gets a verification-focused prompt. The orchestrator routes work to the
+            right discipline — an engineer agent does not decide to also run the tests.
+          </p>
+          <div class="concept-ref">
+            <a href={DOCS.agents} class="concept-ref-link">Agents reference &rarr;</a>
+          </div>
+        </section>
+
+        <section class="concept-section" id="blackboard" aria-labelledby="blackboard-heading">
+          <div class="concept-label" aria-hidden="true">06</div>
+          <h2 id="blackboard-heading" class="concept-heading">The SQLite blackboard</h2>
+          <p>
+            Forge's state lives in a local SQLite database — the <strong>blackboard</strong>. Every
+            run, every task, every gate decision, every agent result is a row in that database.
+            Nothing lives in memory between runs; everything is durable and inspectable.
+          </p>
+          <p>
+            The blackboard is why Forge can resume a run after a crash, why you can inspect a run
+            that finished two days ago, and why the orchestrator can pick up watching a run across
+            terminal sessions. The state is always in the database; the process is just a reader
+            and writer.
+          </p>
+          <p>
+            The SQLite choice is deliberate. The database is a single file on disk — no server to
+            run, no network dependency, trivially backed up, trivially inspected with standard tools.
+            You can <code>sqlite3 ~/.forge/forge.db</code> and read the run table directly. The
+            schema is versioned and the migration path is tested; upgrading Forge does not corrupt
+            existing run history.
+          </p>
+          <div class="concept-ref">
+            <a href={DOCS.blackboard} class="concept-ref-link">Blackboard schema &rarr;</a>
+          </div>
+        </section>
+
+        <section class="flow-section" aria-labelledby="flow-heading">
+          <h2 id="flow-heading" class="flow-heading">How they fit together</h2>
+          <p class="flow-lead">
+            A request flows through Forge like this:
+          </p>
+
+          <ol class="flow-list">
+            <li class="flow-item">
+              <div class="flow-step-badge" aria-hidden="true">1</div>
+              <div class="flow-step-content">
+                <strong>You create a run</strong> with a brief describing the work.
+                Forge writes the run record to the blackboard.
+              </div>
+            </li>
+            <li class="flow-item">
+              <div class="flow-step-badge" aria-hidden="true">2</div>
+              <div class="flow-step-content">
+                <strong>The plan phase runs.</strong> A tech-lead agent reads the brief,
+                produces a step-by-step implementation plan, and writes it as a task result.
+              </div>
+            </li>
+            <li class="flow-item">
+              <div class="flow-step-badge" aria-hidden="true">3</div>
+              <div class="flow-step-content">
+                <strong>A gate pauses the run.</strong> If you configured a human gate here,
+                you review the plan. Approve it and Forge moves to build. Reject it and Forge
+                re-plans with your feedback.
+              </div>
+            </li>
+            <li class="flow-item">
+              <div class="flow-step-badge" aria-hidden="true">4</div>
+              <div class="flow-step-content">
+                <strong>Build tasks run.</strong> Specialist agents implement each step of the
+                plan, writing code and self-validating their output. Parallel steps run in
+                separate containers simultaneously.
+              </div>
+            </li>
+            <li class="flow-item">
+              <div class="flow-step-badge" aria-hidden="true">5</div>
+              <div class="flow-step-content">
+                <strong>Reds review the diff.</strong> Adversarial agents read the completed
+                work looking for problems. Findings are recorded. Blocks pause the run for
+                human review.
+              </div>
+            </li>
+            <li class="flow-item">
+              <div class="flow-step-badge" aria-hidden="true">6</div>
+              <div class="flow-step-content">
+                <strong>The run completes.</strong> All results, decisions, and agent outputs
+                are in the blackboard, linked by run ID, ready to inspect.
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="bottom-nav-section" aria-labelledby="next-heading">
+          <h2 id="next-heading" class="bottom-nav-heading">Go further</h2>
+          <div class="bottom-nav-links">
+            <a href={DOCS.cli} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">CLI reference</span>
+              <span class="bottom-nav-card-desc">Every forge command, flag by flag.</span>
+            </a>
+            <a href={DOCS.workflows} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Workflow definitions</span>
+              <span class="bottom-nav-card-desc">The YAML schema for custom run workflows.</span>
+            </a>
+            <a href="/what-forge-does" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">What Forge does</span>
+              <span class="bottom-nav-card-desc">The non-technical overview for your team.</span>
+            </a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </article>
+</MarketingLayout>
+
+<style>
+  .page-article {
+    color: var(--forge-color-text);
+    font-family: var(--forge-font-family-body);
+    font-size: var(--forge-font-size-base);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Hero ── */
+
+  .page-hero {
+    background: var(--forge-color-surface);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-16) var(--forge-space-6) var(--forge-space-12);
+  }
+
+  .hero-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .hero-headline {
+    font-family: var(--forge-font-family-display);
+    font-size: clamp(var(--forge-font-size-3xl), 5vw, var(--forge-font-size-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .hero-subhead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    max-width: 58ch;
+    margin: 0 0 var(--forge-space-4);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .hero-meta {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: 0;
+  }
+
+  .inline-link {
+    color: var(--forge-color-accent);
+    text-decoration: underline;
+    text-decoration-color: var(--forge-color-accent-subtle);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.15s ease;
+  }
+
+  .inline-link:hover {
+    text-decoration-color: var(--forge-color-accent);
+  }
+
+  .inline-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── ToC ── */
+
+  .toc-nav {
+    background: var(--forge-color-surface-raised);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-4) var(--forge-space-6);
+  }
+
+  .toc-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: var(--forge-space-4);
+    flex-wrap: wrap;
+  }
+
+  .toc-label {
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--forge-color-text-muted);
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .toc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--forge-space-1) var(--forge-space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc;
+  }
+
+  .toc-link {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .toc-link:hover {
+    color: var(--forge-color-accent);
+  }
+
+  .toc-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── Content body ── */
+
+  .content-body {
+    padding: var(--forge-space-12) var(--forge-space-6);
+  }
+
+  .content-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-16);
+  }
+
+  /* ── Concept sections ── */
+
+  .concept-section {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: var(--forge-space-4) var(--forge-space-8);
+    padding-bottom: var(--forge-space-12);
+    border-bottom: 1px solid var(--forge-color-border);
+  }
+
+  .concept-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .concept-label {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    color: var(--forge-color-accent-subtle);
+    letter-spacing: 0.05em;
+    padding-top: 6px;
+  }
+
+  .concept-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0;
+  }
+
+  .concept-section p {
+    grid-column: 2;
+    margin: 0;
+    color: var(--forge-color-text-muted);
+  }
+
+  .concept-section code {
+    font-family: var(--forge-font-family-mono);
+    font-size: 0.88em;
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-sm);
+    padding: 0.1em 0.35em;
+    color: var(--forge-color-text-strong);
+  }
+
+  .concept-ref {
+    grid-column: 2;
+    margin: 0;
+  }
+
+  .concept-ref-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--forge-font-size-sm);
+    font-weight: 500;
+    color: var(--forge-color-accent);
+    text-decoration: none;
+    gap: var(--forge-space-1);
+    transition: gap 0.15s ease;
+  }
+
+  .concept-ref-link:hover {
+    gap: var(--forge-space-2);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .concept-ref-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 540px) {
+    .concept-section {
+      grid-template-columns: 1fr;
+    }
+
+    .concept-label {
+      display: none;
+    }
+
+    .concept-section p,
+    .concept-ref {
+      grid-column: 1;
+    }
+  }
+
+  /* ── Flow section ── */
+
+  .flow-section {
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    padding: var(--forge-space-10) var(--forge-space-10);
+  }
+
+  .flow-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-2);
+  }
+
+  .flow-lead {
+    color: var(--forge-color-text-muted);
+    margin: 0 0 var(--forge-space-8);
+  }
+
+  .flow-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-5);
+  }
+
+  .flow-item {
+    display: flex;
+    gap: var(--forge-space-4);
+    align-items: flex-start;
+  }
+
+  .flow-step-badge {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--forge-color-accent);
+    color: white;
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    font-family: var(--forge-font-family-mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .flow-step-content {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .flow-step-content strong {
+    color: var(--forge-color-text-strong);
+    font-weight: 600;
+  }
+
+  @media (max-width: 540px) {
+    .flow-section {
+      padding: var(--forge-space-6);
+    }
+  }
+
+  /* ── Bottom nav ── */
+
+  .bottom-nav-section {
+    padding-top: var(--forge-space-4);
+  }
+
+  .bottom-nav-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .bottom-nav-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--forge-space-3);
+  }
+
+  .bottom-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+    padding: var(--forge-space-5);
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .bottom-nav-card:hover {
+    border-color: var(--forge-color-accent);
+    transform: translateY(-1px);
+  }
+
+  .bottom-nav-card:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+  }
+
+  .bottom-nav-card-title {
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+  }
+
+  .bottom-nav-card-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+  }
+</style>

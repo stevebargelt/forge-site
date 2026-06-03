@@ -1,0 +1,23 @@
+{
+  "name": "forge-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "node --test tests/integration/source-integrity.test.js tests/integration/build-output.test.js"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.32.0",
+    "@astrojs/vercel": "^8.0.0",
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

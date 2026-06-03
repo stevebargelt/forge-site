@@ -1,0 +1,300 @@
+---
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+---
+
+<MarketingLayout
+  title="Home"
+  description="Forge orchestrates teams of AI agents to complete complex engineering work — reliably, transparently, and at a pace no single model can match."
+>
+  <article class="page-article">
+
+    <header class="page-hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">AI-native engineering orchestration</p>
+        <h1 class="hero-headline">
+          Ship faster with<br class="headline-break" /> an AI agent team.
+        </h1>
+        <p class="hero-subhead">
+          Forge sends specialist AI agents to plan, build, test, and review your engineering work —
+          then gives you a structured record of everything they did.
+        </p>
+        <div class="hero-cta">
+          <a href="/what-forge-does" class="cta-primary">What Forge does &rarr;</a>
+          <a href="/how-forge-runs-work" class="cta-secondary">How it works</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="highlights-section" aria-labelledby="highlights-heading">
+      <div class="section-inner">
+        <h2 id="highlights-heading" class="section-heading">The short version</h2>
+        <div class="highlights-grid">
+          <div class="highlight">
+            <h3 class="highlight-heading">Plans before it builds</h3>
+            <p class="highlight-body">
+              A planning agent reads your brief and writes a step-by-step implementation plan.
+              You approve before any code is written.
+            </p>
+          </div>
+          <div class="highlight">
+            <h3 class="highlight-heading">Right agent for each job</h3>
+            <p class="highlight-body">
+              Architect, engineer, test-engineer, red — each specialist gets exactly the context it needs.
+              No context overload, no hallucinated context.
+            </p>
+          </div>
+          <div class="highlight">
+            <h3 class="highlight-heading">Adversarial review built in</h3>
+            <p class="highlight-body">
+              "Red" agents read completed work specifically to find problems.
+              Work only advances when it passes the review gate.
+            </p>
+          </div>
+          <div class="highlight">
+            <h3 class="highlight-heading">Complete audit trail</h3>
+            <p class="highlight-body">
+              Every decision, plan, diff, and gate approval is stored locally.
+              Inspect exactly what happened, and why.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="nav-section" aria-labelledby="nav-heading">
+      <div class="section-inner section-inner--narrow section-inner--centered">
+        <h2 id="nav-heading" class="section-heading">Learn more</h2>
+        <div class="nav-cards">
+          <a href="/what-forge-does" class="nav-card">
+            <span class="nav-card-label">Stakeholders &amp; teams</span>
+            <span class="nav-card-title">What Forge does</span>
+            <span class="nav-card-desc">Plain-language overview of what Forge is and why orchestration matters.</span>
+          </a>
+          <a href="/how-forge-runs-work" class="nav-card">
+            <span class="nav-card-label">Engineers</span>
+            <span class="nav-card-title">How Forge runs work</span>
+            <span class="nav-card-desc">Runs, tasks, gates, reds, agents, and the SQLite blackboard explained.</span>
+          </a>
+          <a href="/docs/" class="nav-card">
+            <span class="nav-card-label">Reference</span>
+            <span class="nav-card-title">Documentation</span>
+            <span class="nav-card-desc">Operator docs, CLI reference, and configuration guides.</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </article>
+</MarketingLayout>
+
+<style>
+  .page-article {
+    color: var(--forge-color-text);
+    font-family: var(--forge-font-family-body);
+    font-size: var(--forge-font-size-base);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Hero ── */
+
+  .page-hero {
+    background: var(--forge-color-surface);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-20) var(--forge-space-6) var(--forge-space-16);
+  }
+
+  .hero-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .hero-headline {
+    font-family: var(--forge-font-family-display);
+    font-size: clamp(var(--forge-font-size-3xl), 5vw, var(--forge-font-size-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .headline-break {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .headline-break {
+      display: block;
+    }
+  }
+
+  .hero-subhead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    max-width: 52ch;
+    margin: 0 0 var(--forge-space-8);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--forge-space-3);
+    align-items: center;
+  }
+
+  .cta-primary {
+    display: inline-block;
+    padding: var(--forge-space-3) var(--forge-space-6);
+    background: var(--forge-color-accent);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--forge-radius-md);
+    font-weight: 600;
+    font-size: var(--forge-font-size-base);
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .cta-primary:hover {
+    background: var(--forge-color-accent-bright);
+    transform: translateY(-1px);
+  }
+
+  .cta-secondary {
+    display: inline-block;
+    padding: var(--forge-space-3) var(--forge-space-6);
+    color: var(--forge-color-text-muted);
+    text-decoration: none;
+    border-radius: var(--forge-radius-md);
+    font-weight: 500;
+    font-size: var(--forge-font-size-base);
+    border: 1px solid var(--forge-color-border);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .cta-secondary:hover {
+    color: var(--forge-color-text-strong);
+    border-color: var(--forge-color-accent);
+  }
+
+  /* ── Highlights ── */
+
+  .highlights-section {
+    padding: var(--forge-space-16) var(--forge-space-6);
+    background: var(--forge-color-surface-raised);
+  }
+
+  .section-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .section-inner--narrow {
+    max-width: 900px;
+  }
+
+  .section-inner--centered {
+    text-align: center;
+  }
+
+  .section-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-8);
+  }
+
+  .highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--forge-space-6);
+  }
+
+  .highlight {
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    padding: var(--forge-space-6);
+  }
+
+  .highlight-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-3);
+    border-left: 3px solid var(--forge-color-accent);
+    padding-left: var(--forge-space-3);
+  }
+
+  .highlight-body {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: 0;
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Nav section ── */
+
+  .nav-section {
+    padding: var(--forge-space-16) var(--forge-space-6);
+  }
+
+  .nav-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--forge-space-4);
+    margin-top: var(--forge-space-8);
+    text-align: left;
+  }
+
+  .nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-2);
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    padding: var(--forge-space-6);
+    text-decoration: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  }
+
+  .nav-card:hover {
+    border-color: var(--forge-color-accent);
+    box-shadow: 0 4px 16px hsl(329 65% 50% / 0.10);
+    transform: translateY(-2px);
+  }
+
+  .nav-card-label {
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+  }
+
+  .nav-card-title {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-lg);
+    font-weight: 700;
+    color: var(--forge-color-text-strong);
+  }
+
+  .nav-card-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+</style>
