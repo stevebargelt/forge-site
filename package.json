@@ -7,14 +7,17 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --test tests/integration/source-integrity.test.js tests/integration/build-output.test.js"
+    "test": "node --test tests/integration/source-integrity.test.js tests/integration/build-output.test.js",
+    "test:e2e": "pnpm build && npx playwright test"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.32.0",
     "@astrojs/vercel": "^8.0.0",
-    "astro": "^5.0.0"
+    "astro": "^5.0.0",
+    "gsap": "^3.12.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "typescript": "^5.7.0"
   },
   "engines": {

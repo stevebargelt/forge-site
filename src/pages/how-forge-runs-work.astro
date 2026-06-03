@@ -1,5 +1,6 @@
 ---
 import MarketingLayout from '../layouts/MarketingLayout.astro';
+import ForgeRunDiagram from '../components/ForgeRunDiagram.astro';
 
 // Canonical Forge documentation links — update these when the docs move.
 // These are the single source of truth for outbound references on this page.
@@ -200,6 +201,16 @@ const DOCS = {
           <div class="concept-ref">
             <a href={DOCS.blackboard} class="concept-ref-link">Blackboard schema &rarr;</a>
           </div>
+        </section>
+
+        <section class="diagram-section" aria-labelledby="diagram-heading">
+          <h2 id="diagram-heading" class="diagram-heading">A real Forge run</h2>
+          <p class="diagram-lead">
+            The diagram below is animated from a real run trace — events exported from the
+            SQLite blackboard. Each stage's width reflects its share of the pipeline's work,
+            and gates and reds appear where they actually occurred in the run.
+          </p>
+          <ForgeRunDiagram />
         </section>
 
         <section class="flow-section" aria-labelledby="flow-heading">
@@ -510,6 +521,31 @@ const DOCS = {
     .concept-ref {
       grid-column: 1;
     }
+  }
+
+  /* ── Diagram section ── */
+
+  .diagram-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  .diagram-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0;
+  }
+
+  .diagram-lead {
+    color: var(--forge-color-text-muted);
+    margin: 0;
+    max-width: 68ch;
+    font-size: var(--forge-font-size-sm);
+    line-height: var(--forge-line-height-relaxed);
   }
 
   /* ── Flow section ── */

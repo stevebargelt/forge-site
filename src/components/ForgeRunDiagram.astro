@@ -1,0 +1,390 @@
+---
+import { getCanonicalModel } from '../lib/forge-run-transform.js';
+
+const model = getCanonicalModel();
+
+// Orchestrator spans the full run in the data model (it's a framing concept, not a container task).
+// For the timeline track we substitute its real dispatch window (time until architect started)
+// and normalize all widths so the proportional bar stays meaningful.
+const architectStage = model.stages.find((s: { id: string }) => s.id === 'architect');
+const orchestratorTrackRaw = architectStage ? Math.max(architectStage.relativeStart, 0.02) : 0.02;
+
+const trackRaw: Record<string, number> = {};
+for (const s of model.stages) {
+  trackRaw[s.id] = s.id === 'orchestrator' ? orchestratorTrackRaw : s.relativeDuration;
+}
+const trackTotal = Object.values(trackRaw).reduce((a: number, b: number) => a + b, 0);
+const trackPct: Record<string, number> = {};
+for (const [id, w] of Object.entries(trackRaw)) {
+  trackPct[id] = ((w as number) / trackTotal) * 100;
+}
+
+const STAGE_DESCRIPTIONS: Record<string, string> = {
+  orchestrator: 'Receives the feature request and dispatches the agent pipeline.',
+  architect:    'Analyzes risks, constraints, and system-level boundaries.',
+  plan:         'Produces a step-by-step implementation plan with acceptance criteria.',
+  build:        'Specialist agents implement and self-validate each plan step.',
+  verify:       'Integration and E2E tests confirm every path in the shipped diff.',
+};
+---
+
+<figure
+  id="forge-run-diagram"
+  aria-label="Forge pipeline diagram"
+  class="run-diagram"
+  data-animation-complete=""
+  data-stages={JSON.stringify(model.stages.map(s => ({
+    id: s.id,
+    relativeStart: s.relativeStart,
+    relativeDuration: s.relativeDuration,
+  })))}
+>
+  <figcaption class="diagram-caption">
+    <span class="caption-eyebrow">Real run trace</span>
+    <span class="caption-title">{model.runTitle}</span>
+  </figcaption>
+
+  <!-- Proportional timeline track — visual-only, aria-hidden -->
+  <div class="timeline-bar" aria-hidden="true" role="presentation">
+    <div class="timeline-inner">
+      {model.stages.map(stage => (
+        <div
+          class={`track-seg track-seg--${stage.id}`}
+          style={`flex: 0 0 ${trackPct[stage.id].toFixed(4)}%; min-width: 0`}
+          title={`${stage.label}: ${(stage.relativeDuration * 100).toFixed(1)}% of pipeline work`}
+        />
+      ))}
+    </div>
+    <div class="timeline-labels" aria-hidden="true">
+      {model.stages.map(stage => (
+        <div
+          class={`tl-label tl-label--${stage.id}`}
+          style={`flex: 0 0 ${trackPct[stage.id].toFixed(4)}%; min-width: 0`}
+        >
+          {stage.id === 'build' && (
+            <span class="tl-label-text">{(stage.relativeDuration * 100).toFixed(0)}% of pipeline</span>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Accessible pipeline list: five stage nodes -->
+  <ol role="list" class="stage-list">
+    {model.stages.map(stage => (
+      <li class="stage-node" data-stage={stage.id}>
+        <div class="stage-card">
+          <div class="stage-card-header">
+            <span class="stage-label">{stage.label}</span>
+            {stage.hasReds && (
+              <span class="red-badge" aria-label="Adversarial review">
+                <svg aria-hidden="true" width="9" height="9" viewBox="0 0 10 10" fill="currentColor">
+                  <polygon points="5,0 10,3 10,7 5,10 0,7 0,3" />
+                </svg>
+                Adversarial review
+              </span>
+            )}
+          </div>
+          <p class="stage-desc">{STAGE_DESCRIPTIONS[stage.id]}</p>
+        </div>
+        {stage.hasGate && (
+          <div role="separator" aria-label="Gate checkpoint" class="gate-marker">
+            <svg aria-hidden="true" class="gate-diamond" width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1L13 7L7 13L1 7Z" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <span class="gate-label-text">Gate</span>
+          </div>
+        )}
+      </li>
+    ))}
+  </ol>
+</figure>
+
+<style>
+  /* ── Outer figure ─────────────────────────────────────────── */
+  .run-diagram {
+    margin: 0;
+    padding: var(--forge-space-8);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-md);
+    overflow: hidden;
+  }
+
+  /* ── Caption ──────────────────────────────────────────────── */
+  .diagram-caption {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+    margin-bottom: var(--forge-space-6);
+  }
+
+  .caption-eyebrow {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+  }
+
+  .caption-title {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Timeline bar ─────────────────────────────────────────── */
+  .timeline-bar {
+    margin-bottom: var(--forge-space-6);
+    border-radius: var(--forge-radius-sm);
+    overflow: hidden;
+  }
+
+  .timeline-inner {
+    display: flex;
+    width: 100%;
+    height: 8px;
+    border-radius: var(--forge-radius-sm);
+    overflow: hidden;
+    gap: 1px;
+    background: var(--forge-color-border);
+  }
+
+  .track-seg {
+    height: 100%;
+    transition: transform 0s; /* GSAP overrides */
+  }
+
+  .track-seg--orchestrator { background: var(--forge-color-border); }
+  .track-seg--architect    { background: color-mix(in srgb, var(--forge-color-accent) 40%, var(--forge-color-border)); }
+  .track-seg--plan         { background: color-mix(in srgb, var(--forge-color-accent) 50%, var(--forge-color-border)); }
+  .track-seg--build        { background: var(--forge-color-accent); }
+  .track-seg--verify       { background: color-mix(in srgb, var(--forge-color-accent) 60%, var(--forge-color-border)); }
+
+  .timeline-labels {
+    display: flex;
+    width: 100%;
+    margin-top: var(--forge-space-1);
+    min-height: 1rem;
+  }
+
+  .tl-label {
+    overflow: hidden;
+  }
+
+  .tl-label--build {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tl-label-text {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Stage list ───────────────────────────────────────────── */
+  .stage-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--forge-space-2);
+    align-items: start;
+  }
+
+  /* ── Stage node ───────────────────────────────────────────── */
+  .stage-node {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--forge-space-2);
+    position: relative;
+  }
+
+  /* Connector arrow between stage cards (except last) */
+  .stage-node:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: calc(-1 * var(--forge-space-2) / 2 - 1px);
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 5px solid var(--forge-color-border);
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+
+  /* ── Stage card ───────────────────────────────────────────── */
+  .stage-card {
+    padding: var(--forge-space-3);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-2);
+    min-height: 100px;
+    position: relative;
+  }
+
+  .stage-node[data-stage='build'] .stage-card {
+    border-color: var(--forge-color-accent);
+    box-shadow: 0 0 0 1px var(--forge-color-accent);
+  }
+
+  .stage-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--forge-space-1);
+    flex-wrap: wrap;
+  }
+
+  .stage-label {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+  }
+
+  .stage-desc {
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-border);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ── Red badge ────────────────────────────────────────────── */
+  .red-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--forge-space-1);
+    padding: 2px var(--forge-space-2);
+    background: color-mix(in srgb, var(--forge-color-accent) 12%, var(--forge-color-surface-raised));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 30%, var(--forge-color-border));
+    border-radius: var(--forge-radius-sm);
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-accent);
+    white-space: nowrap;
+  }
+
+  /* ── Gate marker ──────────────────────────────────────────── */
+  .gate-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--forge-space-1);
+    padding: var(--forge-space-1) 0;
+    color: var(--forge-color-accent);
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+  }
+
+  .gate-diamond {
+    flex-shrink: 0;
+    color: var(--forge-color-accent);
+  }
+
+  .gate-label-text {
+    font-size: var(--forge-font-size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Responsive ───────────────────────────────────────────── */
+  @media (max-width: 720px) {
+    .stage-list {
+      grid-template-columns: 1fr;
+    }
+
+    .stage-node:not(:last-child)::after {
+      display: none;
+    }
+
+    .run-diagram {
+      padding: var(--forge-space-4);
+    }
+  }
+
+  @media (max-width: 960px) and (min-width: 721px) {
+    .stage-list {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stage-node:not(:last-child)::after {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+const figure = document.getElementById('forge-run-diagram') as HTMLElement | null;
+
+if (figure) {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (prefersReducedMotion) {
+    figure.dataset.reducedMotion = 'true';
+  } else {
+    const stageNodes = figure.querySelectorAll<HTMLElement>('.stage-node');
+    const gateMarkers = figure.querySelectorAll<HTMLElement>('.gate-marker');
+    const trackSegs = figure.querySelectorAll<HTMLElement>('.track-seg');
+
+    // Initial hidden state — the work hasn't "flowed in" yet.
+    gsap.set(stageNodes, { opacity: 0, x: -16 });
+    gsap.set(gateMarkers, { opacity: 0, scale: 0.6, transformOrigin: 'center center' });
+    gsap.set(trackSegs, { scaleX: 0, transformOrigin: 'left center' });
+
+    // Scrub the reveal to scroll position: the pipeline fills stage-by-stage as
+    // you scroll the section through the viewport, and reverses on the way up.
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: figure,
+        start: 'top 80%',
+        end: 'bottom 35%',
+        scrub: 0.6,
+        onUpdate(self) {
+          figure.dataset.animationComplete = self.progress >= 0.999 ? 'true' : '';
+        },
+      },
+    });
+
+    // One timeline-unit per stage so the five stages spread evenly across the scrub.
+    stageNodes.forEach((node, i) => {
+      const stageId = node.dataset.stage;
+      const seg = figure.querySelector<HTMLElement>(`.track-seg--${stageId}`);
+      const gate = node.querySelector<HTMLElement>('.gate-marker');
+      const t = i;
+
+      if (seg) {
+        tl.to(seg, { scaleX: 1, duration: 0.9 }, t);
+      }
+      tl.to(node, { opacity: 1, x: 0, duration: 0.7 }, t + 0.1);
+      if (gate) {
+        tl.to(gate, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }, t + 0.55);
+      }
+    });
+  }
+}
+</script>
