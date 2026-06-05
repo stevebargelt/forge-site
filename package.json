@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --test tests/integration/source-integrity.test.js tests/integration/build-output.test.js",
+    "test": "node --test tests/integration/source-integrity.test.js tests/integration/component-integrity.test.js tests/integration/build-output.test.js",
     "test:e2e": "pnpm build && npx playwright test"
   },
   "dependencies": {

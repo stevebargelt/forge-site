@@ -1,0 +1,603 @@
+---
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import GateGlyph from '../components/GateGlyph.astro';
+import RedBadge from '../components/RedBadge.astro';
+import StageChip from '../components/StageChip.astro';
+
+// Canonical Forge documentation links — update these when the docs move.
+const DOCS = {
+  root:      '/docs/',
+  backlog:   '/docs/reference/cli/',
+  setup:     '/docs/concepts/runs/',
+  workflows: '/docs/reference/workflows/',
+  gates:     '/docs/concepts/gates/',
+} as const;
+---
+
+<MarketingLayout
+  title="Kick off a new project"
+  description="Bring an idea, a name, and a rough shape. The orchestrator helps you scope the first slice, files backlog tickets, and runs the first feature — so you leave with working code and a roadmap."
+>
+  <article class="page-article">
+
+    <header class="page-hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">Walkthrough &middot; Product owner</p>
+        <h1 class="hero-headline">Kick off a new project</h1>
+        <p class="hero-subhead">
+          Bring the idea. The orchestrator helps you scope the first meaningful slice,
+          files backlog tickets, pauses for your review, then runs the first feature
+          through the full pipeline.
+        </p>
+        <p class="hero-meta">
+          For backlog management and workflow configuration, see the
+          <a href={DOCS.root} class="inline-link">full documentation</a>.
+        </p>
+      </div>
+    </header>
+
+    <div class="content-body">
+      <div class="content-inner">
+
+        <ol class="shape-flow" aria-label="New project walkthrough steps">
+
+          <li class="shape-card shape-card--say">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">1</span>
+              <h2 class="shape-title">What you say</h2>
+            </div>
+            <div class="shape-content">
+              <p>
+                Bring the name, the problem it solves, and the rough shape. No technical
+                spec, no architecture doc, no backlog pre-populated. Plain language.
+              </p>
+              <blockquote class="example-quote">
+                <p>
+                  "I want to build a CLI tool for auditing database migration history.
+                  It should read from a migrations folder, detect gaps and duplicates,
+                  and output a report. I want it in Go."
+                </p>
+              </blockquote>
+              <p>
+                That is enough. The orchestrator knows what to do with it.
+              </p>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--does">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">2</span>
+              <h2 class="shape-title">What the orchestrator does</h2>
+            </div>
+            <div class="shape-content">
+              <p>
+                The orchestrator works through the project setup before any code runs:
+              </p>
+              <ol class="pipeline-steps">
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="scope" /></span>
+                  <span class="pipeline-step-desc">
+                    Identifies the smallest first slice that delivers real value — not the
+                    whole vision, just the piece that proves the concept and gives you
+                    something real to build on.
+                  </span>
+                </li>
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="backlog" /></span>
+                  <span class="pipeline-step-desc">
+                    Files backlog tickets for the identified work items — the first feature
+                    and the next logical steps beyond it. Each ticket has a title, brief,
+                    and acceptance shape.
+                  </span>
+                </li>
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="review" /></span>
+                  <span class="pipeline-step-desc">
+                    Pauses at the planning gate <GateGlyph variant="inline" />. You review the
+                    proposed backlog, adjust scope, redirect priorities. This is the
+                    cheapest moment to change the plan.
+                  </span>
+                </li>
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="build" /></span>
+                  <span class="pipeline-step-desc">
+                    Once you confirm <GateGlyph variant="inline" />, runs the first feature
+                    through the full pipeline: architect → plan → build → adversarial
+                    review <RedBadge variant="inline" /> → verify. The same pipeline as
+                    any other feature request.
+                  </span>
+                </li>
+              </ol>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--decide">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">3</span>
+              <h2 class="shape-title">What you see and decide</h2>
+            </div>
+            <div class="shape-content">
+              <ul class="decision-list">
+                <li class="decision-item">
+                  <strong>The proposed backlog — before any code is written.</strong>
+                  A list of work items with titles, briefs, and rough ordering.
+                  The planning gate <GateGlyph variant="inline" /> pauses here.
+                  Review it, adjust priorities, remove anything that doesn't belong.
+                  This is your project — the orchestrator proposes, you decide.
+                </li>
+                <li class="decision-item">
+                  <strong>Gate summaries as the first feature runs.</strong>
+                  At each phase transition, the orchestrator tells you what the
+                  phase produced. Adversarial review <RedBadge variant="inline" />
+                  findings surface here if they need your attention.
+                </li>
+                <li class="decision-item">
+                  <strong>A completion report for the first feature.</strong>
+                  What shipped, what tests pass, what the reds found, and how
+                  findings were handled.
+                </li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--get">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">4</span>
+              <h2 class="shape-title">What you get</h2>
+            </div>
+            <div class="shape-content">
+              <ul class="outcome-list">
+                <li class="outcome-item">
+                  A working first slice — planned, built by specialist agents, adversarially
+                  reviewed <RedBadge variant="inline" />, and integration-tested. Real code,
+                  not a scaffold.
+                </li>
+                <li class="outcome-item">
+                  A backlog for what comes next. The next session starts with tickets
+                  already filed and a clear first item ready to run.
+                </li>
+                <li class="outcome-item">
+                  An established project structure that the orchestrator can navigate
+                  in future sessions — the <StageChip name="architect" /> phase already
+                  understands the codebase shape and tech choices.
+                </li>
+                <li class="outcome-item">
+                  A complete audit trail. Every gate decision, every agent output,
+                  every adversarial finding <RedBadge variant="inline" /> — recorded
+                  in the run history and addressable by run ID.
+                </li>
+              </ul>
+            </div>
+          </li>
+
+        </ol>
+
+        <section class="next-step-section" aria-labelledby="next-step-heading">
+          <h2 id="next-step-heading" class="next-step-heading">The onboarding arc</h2>
+          <p class="next-step-lead">
+            Kick off sets the foundation. Every feature after this follows the same
+            flow — you describe what you want, the orchestrator runs the pipeline,
+            and you review at the gates that matter.
+          </p>
+          <a href="/add-a-feature" class="next-step-link">
+            See the full feature walkthrough &rarr;
+          </a>
+        </section>
+
+        <section class="bottom-nav-section" aria-labelledby="further-heading">
+          <h2 id="further-heading" class="bottom-nav-heading">Go further</h2>
+          <div class="bottom-nav-links">
+            <a href={DOCS.gates} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Gates</span>
+              <span class="bottom-nav-card-desc">How the planning gate and subsequent gates work.</span>
+            </a>
+            <a href={DOCS.backlog} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Backlog management</span>
+              <span class="bottom-nav-card-desc">How the orchestrator files and reads backlog tickets.</span>
+            </a>
+            <a href={DOCS.workflows} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Workflow definitions</span>
+              <span class="bottom-nav-card-desc">Configure which stages and gates run for your project.</span>
+            </a>
+            <a href="/add-a-feature" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Add a feature</span>
+              <span class="bottom-nav-card-desc">Walk through the full feature pipeline step by step.</span>
+            </a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </article>
+</MarketingLayout>
+
+<style>
+  .page-article {
+    color: var(--forge-color-text);
+    font-family: var(--forge-font-family-body);
+    font-size: var(--forge-font-size-base);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Hero ── */
+
+  .page-hero {
+    background: var(--forge-color-surface);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-16) var(--forge-space-6) var(--forge-space-12);
+  }
+
+  .hero-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .hero-headline {
+    font-family: var(--forge-font-family-display);
+    font-size: clamp(var(--forge-font-size-3xl), 5vw, var(--forge-font-size-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .hero-subhead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    max-width: 58ch;
+    margin: 0 0 var(--forge-space-4);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .hero-meta {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: 0;
+  }
+
+  .inline-link {
+    color: var(--forge-color-accent);
+    text-decoration: underline;
+    text-decoration-color: var(--forge-color-accent-subtle);
+    text-underline-offset: 2px;
+  }
+
+  .inline-link:hover {
+    text-decoration-color: var(--forge-color-accent);
+  }
+
+  .inline-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── Content body ── */
+
+  .content-body {
+    padding: var(--forge-space-12) var(--forge-space-6);
+  }
+
+  .content-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-12);
+  }
+
+  /* ── Shape flow ── */
+
+  .shape-flow {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  /* ── Shape cards ── */
+
+  .shape-card {
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    overflow: hidden;
+  }
+
+  .shape-card--say    { border-top: 3px solid var(--forge-color-border); }
+  .shape-card--does   { border-top: 3px solid var(--forge-color-accent); }
+  .shape-card--decide { border-top: 3px solid color-mix(in srgb, var(--forge-color-accent) 50%, var(--forge-color-border)); }
+  .shape-card--get    { border-top: 3px solid color-mix(in srgb, var(--forge-color-accent) 70%, var(--forge-color-border)); }
+
+  .shape-header {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-3);
+    padding: var(--forge-space-5) var(--forge-space-6) var(--forge-space-4);
+    background: var(--forge-color-surface-raised);
+    border-bottom: 1px solid var(--forge-color-border);
+  }
+
+  .shape-number {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--forge-color-accent);
+    color: var(--forge-color-text-on-accent);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    font-family: var(--forge-font-family-mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shape-title {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-lg);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--forge-color-text-strong);
+    margin: 0;
+  }
+
+  .shape-content {
+    padding: var(--forge-space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  .shape-content p {
+    margin: 0;
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Example quote ── */
+
+  .example-quote {
+    margin: 0;
+    padding: var(--forge-space-4) var(--forge-space-5);
+    background: var(--forge-color-surface-raised);
+    border-left: 3px solid var(--forge-color-accent-subtle);
+    border-radius: 0 var(--forge-radius-sm) var(--forge-radius-sm) 0;
+  }
+
+  .example-quote p {
+    font-style: italic;
+    color: var(--forge-color-text);
+  }
+
+  /* ── Pipeline steps ── */
+
+  .pipeline-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .pipeline-step {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: var(--forge-space-3);
+    padding: var(--forge-space-3);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-md);
+    align-items: start;
+  }
+
+  .pipeline-step-label {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-2);
+    padding-top: 1px;
+  }
+
+  .pipeline-step-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Decision list ── */
+
+  .decision-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  .decision-item {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    padding-left: var(--forge-space-5);
+    border-left: 2px solid var(--forge-color-accent-subtle);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .decision-item strong {
+    display: block;
+    color: var(--forge-color-text-strong);
+    font-weight: 600;
+    margin-bottom: var(--forge-space-1);
+  }
+
+  /* ── Outcome list ── */
+
+  .outcome-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .outcome-item {
+    display: flex;
+    gap: var(--forge-space-3);
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+    align-items: flex-start;
+  }
+
+  .outcome-item::before {
+    content: '';
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--forge-color-accent);
+    margin-top: 7px;
+  }
+
+  /* ── Next-step section ── */
+
+  .next-step-section {
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    padding: var(--forge-space-8) var(--forge-space-8);
+  }
+
+  .next-step-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-3);
+  }
+
+  .next-step-lead {
+    color: var(--forge-color-text-muted);
+    margin: 0 0 var(--forge-space-5);
+    max-width: 60ch;
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .next-step-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--forge-font-size-sm);
+    font-weight: 500;
+    color: var(--forge-color-accent);
+    text-decoration: none;
+    gap: var(--forge-space-1);
+    transition: gap 0.15s ease;
+  }
+
+  .next-step-link:hover {
+    gap: var(--forge-space-2);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .next-step-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── Bottom nav ── */
+
+  .bottom-nav-section {
+    padding-top: var(--forge-space-4);
+  }
+
+  .bottom-nav-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .bottom-nav-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--forge-space-3);
+  }
+
+  .bottom-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+    padding: var(--forge-space-5);
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .bottom-nav-card:hover {
+    border-color: var(--forge-color-accent);
+    transform: translateY(-1px);
+  }
+
+  .bottom-nav-card:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+  }
+
+  .bottom-nav-card-title {
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+  }
+
+  .bottom-nav-card-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+  }
+
+  /* ── Responsive ── */
+
+  @media (max-width: 600px) {
+    .pipeline-step {
+      grid-template-columns: 1fr;
+    }
+
+    .next-step-section {
+      padding: var(--forge-space-6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bottom-nav-card {
+      transition: none;
+    }
+
+    .bottom-nav-card:hover {
+      transform: none;
+    }
+
+    .next-step-link {
+      transition: none;
+    }
+  }
+</style>

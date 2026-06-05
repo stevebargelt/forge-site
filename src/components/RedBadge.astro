@@ -1,0 +1,42 @@
+---
+interface Props {
+  variant?: 'card' | 'inline';
+}
+const { variant = 'card' } = Astro.props;
+---
+
+{variant === 'card' ? (
+  <span class="red-badge" aria-label="Adversarial review">
+    <svg aria-hidden="true" width="9" height="9" viewBox="0 0 10 10" fill="currentColor">
+      <polygon points="5,0 10,3 10,7 5,10 0,7 0,3" />
+    </svg>
+    Adversarial review
+  </span>
+) : (
+  <svg aria-hidden="true" class="red-badge-glyph" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+    <polygon points="5,0 10,3 10,7 5,10 0,7 0,3" />
+  </svg>
+)}
+
+<style>
+  .red-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--forge-space-1);
+    padding: 2px var(--forge-space-2);
+    background: color-mix(in srgb, var(--forge-color-accent) 12%, var(--forge-color-surface-raised));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 30%, var(--forge-color-border));
+    border-radius: var(--forge-radius-sm);
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-accent);
+    white-space: nowrap;
+  }
+
+  .red-badge-glyph {
+    display: inline-block;
+    vertical-align: middle;
+    color: var(--forge-color-accent);
+    fill: var(--forge-color-accent);
+  }
+</style>

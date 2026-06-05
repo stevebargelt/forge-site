@@ -1,0 +1,559 @@
+---
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import StageChip from '../components/StageChip.astro';
+
+// Canonical Forge documentation links — update these when the docs move.
+const DOCS = {
+  root:     '/docs/',
+  agents:   '/docs/concepts/agents/',
+  invoke:   '/docs/reference/cli/',
+  runs:     '/docs/concepts/runs/',
+} as const;
+---
+
+<MarketingLayout
+  title="Do research"
+  description="Ask the orchestrator a question that needs concrete evidence. It routes to a research specialist — a single invoke, not a pipeline run — and synthesizes the findings for you."
+>
+  <article class="page-article">
+
+    <header class="page-hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">Walkthrough &middot; Product owner</p>
+        <h1 class="hero-headline">Do research</h1>
+        <p class="hero-subhead">
+          Not every request is a feature. When you need a question answered — with real
+          evidence, not a recollection — the orchestrator routes to a research specialist.
+          One invoke, no pipeline, no gates.
+        </p>
+        <p class="hero-meta">
+          For details on agent invocations and the CLI, see the
+          <a href={DOCS.root} class="inline-link">full documentation</a>.
+        </p>
+      </div>
+    </header>
+
+    <div class="content-body">
+      <div class="content-inner">
+
+        <div class="contrast-banner" role="note" aria-label="Key distinction">
+          <svg class="contrast-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 5v4M8 11v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <p>
+            Research uses a single <code class="inline-code">forge invoke</code> — not a feature pipeline.
+            There are no gates, no adversarial reds, no build phase. The right tool for
+            the right job: answering a question is not the same as shipping a change.
+          </p>
+        </div>
+
+        <ol class="shape-flow" aria-label="Research walkthrough steps">
+
+          <li class="shape-card shape-card--say">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">1</span>
+              <h2 class="shape-title">What you say</h2>
+            </div>
+            <div class="shape-content">
+              <p>
+                Ask a question that needs concrete evidence — not a vague impression,
+                but specific findings the orchestrator can act on.
+              </p>
+              <blockquote class="example-quote">
+                <p>
+                  "What are the security implications of storing JWTs in localStorage versus
+                  httpOnly cookies for our auth setup?"
+                </p>
+              </blockquote>
+              <blockquote class="example-quote">
+                <p>
+                  "What's the actual performance difference between our current SQLite query
+                  for the run list and a version that uses a covering index?"
+                </p>
+              </blockquote>
+              <p>
+                The orchestrator classifies the request as research — not a pipeline run — and
+                routes to the appropriate specialist.
+              </p>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--does">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">2</span>
+              <h2 class="shape-title">What the orchestrator does</h2>
+            </div>
+            <div class="shape-content">
+              <p>
+                The orchestrator runs a single <a href={DOCS.invoke} class="inline-link">forge invoke</a> call
+                to a <StageChip name="research" /> specialist agent.
+                One agent, one task. The specialist:
+              </p>
+              <ul class="action-list">
+                <li class="action-item">
+                  <strong>Gathers concrete evidence.</strong>
+                  It reads the relevant code, documents, or external sources — depending
+                  on what the question requires. It does not guess or recite training data.
+                </li>
+                <li class="action-item">
+                  <strong>Returns structured findings.</strong>
+                  Specific claims, backed by specific evidence. No hedged "it depends"
+                  without naming what it depends on.
+                </li>
+              </ul>
+              <p class="no-gate-note">
+                Notice what is absent here: no gates, no adversarial review, no plan phase.
+                This is not a pipeline — it is a direct invoke. The orchestrator reads
+                the result and synthesizes it for you without any multi-phase overhead.
+              </p>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--decide">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">3</span>
+              <h2 class="shape-title">What you see and decide</h2>
+            </div>
+            <div class="shape-content">
+              <ul class="decision-list">
+                <li class="decision-item">
+                  <strong>The specialist's report.</strong>
+                  Concrete findings from the actual code, docs, or sources the agent
+                  examined — not a hallucinated summary.
+                </li>
+                <li class="decision-item">
+                  <strong>The orchestrator's synthesis.</strong>
+                  What the findings mean for your specific question, stated plainly.
+                  If there are trade-offs, they are named. If there is a clear answer,
+                  it is given.
+                </li>
+                <li class="decision-item">
+                  <strong>A decision point — or just an answer.</strong>
+                  If the research surfaces a next step (a security change to make, a
+                  pattern to adopt), you decide whether to start a feature. If the
+                  question was purely informational, you simply have your answer.
+                </li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--get">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">4</span>
+              <h2 class="shape-title">What you get</h2>
+            </div>
+            <div class="shape-content">
+              <ul class="outcome-list">
+                <li class="outcome-item">
+                  An answer grounded in evidence the research specialist actually
+                  gathered — from your codebase, your docs, or the specific sources
+                  relevant to the question.
+                </li>
+                <li class="outcome-item">
+                  No implementation work was kicked off. This was a single invoke,
+                  not a feature run. The pipeline starts only if you decide the
+                  research points to a change worth making.
+                </li>
+                <li class="outcome-item">
+                  The result is recorded in the run history alongside feature work —
+                  so you have an audit trail of decisions and the evidence behind them,
+                  not just code changes.
+                </li>
+              </ul>
+            </div>
+          </li>
+
+        </ol>
+
+        <section class="bottom-nav-section" aria-labelledby="further-heading">
+          <h2 id="further-heading" class="bottom-nav-heading">Go further</h2>
+          <div class="bottom-nav-links">
+            <a href={DOCS.agents} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Agents</span>
+              <span class="bottom-nav-card-desc">How specialist agents are scoped and seeded.</span>
+            </a>
+            <a href={DOCS.invoke} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">CLI reference</span>
+              <span class="bottom-nav-card-desc">forge invoke and its flags, explained.</span>
+            </a>
+            <a href="/add-a-feature" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Add a feature</span>
+              <span class="bottom-nav-card-desc">When research points to an implementation — how the pipeline works.</span>
+            </a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </article>
+</MarketingLayout>
+
+<style>
+  .page-article {
+    color: var(--forge-color-text);
+    font-family: var(--forge-font-family-body);
+    font-size: var(--forge-font-size-base);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Hero ── */
+
+  .page-hero {
+    background: var(--forge-color-surface);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-16) var(--forge-space-6) var(--forge-space-12);
+  }
+
+  .hero-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .hero-headline {
+    font-family: var(--forge-font-family-display);
+    font-size: clamp(var(--forge-font-size-3xl), 5vw, var(--forge-font-size-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .hero-subhead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    max-width: 58ch;
+    margin: 0 0 var(--forge-space-4);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .hero-meta {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: 0;
+  }
+
+  .inline-link {
+    color: var(--forge-color-accent);
+    text-decoration: underline;
+    text-decoration-color: var(--forge-color-accent-subtle);
+    text-underline-offset: 2px;
+  }
+
+  .inline-link:hover {
+    text-decoration-color: var(--forge-color-accent);
+  }
+
+  .inline-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── Content body ── */
+
+  .content-body {
+    padding: var(--forge-space-12) var(--forge-space-6);
+  }
+
+  .content-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-8);
+  }
+
+  /* ── Contrast banner ── */
+
+  .contrast-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--forge-space-3);
+    padding: var(--forge-space-4) var(--forge-space-5);
+    background: color-mix(in srgb, var(--forge-color-accent) 6%, var(--forge-color-surface));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 25%, var(--forge-color-border));
+    border-radius: var(--forge-radius-md);
+    color: var(--forge-color-accent);
+  }
+
+  .contrast-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .contrast-banner p {
+    margin: 0;
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Shape flow ── */
+
+  .shape-flow {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  /* ── Shape cards ── */
+
+  .shape-card {
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    overflow: hidden;
+  }
+
+  .shape-card--say    { border-top: 3px solid var(--forge-color-border); }
+  .shape-card--does   { border-top: 3px solid var(--forge-color-accent); }
+  .shape-card--decide { border-top: 3px solid color-mix(in srgb, var(--forge-color-accent) 50%, var(--forge-color-border)); }
+  .shape-card--get    { border-top: 3px solid color-mix(in srgb, var(--forge-color-accent) 70%, var(--forge-color-border)); }
+
+  .shape-header {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-3);
+    padding: var(--forge-space-5) var(--forge-space-6) var(--forge-space-4);
+    background: var(--forge-color-surface-raised);
+    border-bottom: 1px solid var(--forge-color-border);
+  }
+
+  .shape-number {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--forge-color-accent);
+    color: var(--forge-color-text-on-accent);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    font-family: var(--forge-font-family-mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shape-title {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-lg);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--forge-color-text-strong);
+    margin: 0;
+  }
+
+  .shape-content {
+    padding: var(--forge-space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  .shape-content p {
+    margin: 0;
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Inline code ── */
+
+  .inline-code {
+    font-family: var(--forge-font-family-mono);
+    font-size: 0.88em;
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-sm);
+    padding: 0.1em 0.35em;
+    color: var(--forge-color-text-strong);
+  }
+
+  /* ── Example quote ── */
+
+  .example-quote {
+    margin: 0;
+    padding: var(--forge-space-4) var(--forge-space-5);
+    background: var(--forge-color-surface-raised);
+    border-left: 3px solid var(--forge-color-accent-subtle);
+    border-radius: 0 var(--forge-radius-sm) var(--forge-radius-sm) 0;
+  }
+
+  .example-quote p {
+    font-style: italic;
+    color: var(--forge-color-text);
+  }
+
+  /* ── Action list ── */
+
+  .action-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .action-item {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    padding-left: var(--forge-space-5);
+    border-left: 2px solid var(--forge-color-accent-subtle);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .action-item strong {
+    display: block;
+    color: var(--forge-color-text-strong);
+    font-weight: 600;
+    margin-bottom: var(--forge-space-1);
+  }
+
+  /* ── No-gate note ── */
+
+  .no-gate-note {
+    margin: 0;
+    padding: var(--forge-space-3) var(--forge-space-4);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-md);
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+    font-style: italic;
+  }
+
+  /* ── Decision list ── */
+
+  .decision-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  .decision-item {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    padding-left: var(--forge-space-5);
+    border-left: 2px solid var(--forge-color-accent-subtle);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .decision-item strong {
+    display: block;
+    color: var(--forge-color-text-strong);
+    font-weight: 600;
+    margin-bottom: var(--forge-space-1);
+  }
+
+  /* ── Outcome list ── */
+
+  .outcome-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .outcome-item {
+    display: flex;
+    gap: var(--forge-space-3);
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+    align-items: flex-start;
+  }
+
+  .outcome-item::before {
+    content: '';
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--forge-color-accent);
+    margin-top: 7px;
+  }
+
+  /* ── Bottom nav ── */
+
+  .bottom-nav-section {
+    padding-top: var(--forge-space-4);
+  }
+
+  .bottom-nav-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .bottom-nav-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--forge-space-3);
+  }
+
+  .bottom-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+    padding: var(--forge-space-5);
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .bottom-nav-card:hover {
+    border-color: var(--forge-color-accent);
+    transform: translateY(-1px);
+  }
+
+  .bottom-nav-card:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+  }
+
+  .bottom-nav-card-title {
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+  }
+
+  .bottom-nav-card-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bottom-nav-card {
+      transition: none;
+    }
+
+    .bottom-nav-card:hover {
+      transform: none;
+    }
+  }
+</style>

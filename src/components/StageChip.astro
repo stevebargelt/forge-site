@@ -1,0 +1,19 @@
+---
+interface Props {
+  name: string;
+}
+const { name } = Astro.props;
+---
+
+<span class="stage-chip">{name}</span>
+
+<style>
+  .stage-chip {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+  }
+</style>

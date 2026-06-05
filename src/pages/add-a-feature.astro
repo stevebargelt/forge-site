@@ -1,0 +1,567 @@
+---
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import GateGlyph from '../components/GateGlyph.astro';
+import RedBadge from '../components/RedBadge.astro';
+import StageChip from '../components/StageChip.astro';
+
+// Canonical Forge documentation links — update these when the docs move.
+const DOCS = {
+  root:      '/docs/',
+  workflows: '/docs/reference/workflows/',
+  cli:       '/docs/reference/cli/',
+  gates:     '/docs/concepts/gates/',
+  reds:      '/docs/concepts/reds/',
+  runs:      '/docs/concepts/runs/',
+  agents:    '/docs/concepts/agents/',
+} as const;
+---
+
+<MarketingLayout
+  title="Add a feature"
+  description="Walk through how Forge handles a feature request from first words to shipped code — entirely driven by the orchestrator."
+>
+  <article class="page-article">
+
+    <header class="page-hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">Walkthrough &middot; Product owner</p>
+        <h1 class="hero-headline">Add a feature</h1>
+        <p class="hero-subhead">
+          You describe what you want. The orchestrator proposes a plan, you confirm it, and
+          the full pipeline runs — architect, plan, build, adversarial review, integration tests.
+          You never type a forge command.
+        </p>
+        <p class="hero-meta">
+          For CLI flags, YAML schema, and workflow definitions, see the
+          <a href={DOCS.root} class="inline-link">full documentation</a>.
+        </p>
+      </div>
+    </header>
+
+    <div class="content-body">
+      <div class="content-inner">
+
+        <ol class="shape-flow" aria-label="Feature walkthrough steps">
+
+          <li class="shape-card shape-card--say">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">1</span>
+              <h2 class="shape-title">What you say</h2>
+            </div>
+            <div class="shape-content">
+              <p>
+                Describe the feature to the orchestrator in plain language — what it should do,
+                why it matters, any constraints you know about. A sentence or a paragraph.
+                No CLI commands, no YAML, no ticket format required.
+              </p>
+              <blockquote class="example-quote">
+                <p>
+                  "Add a CSV export to the usage table on the dashboard. It should include all
+                  visible columns and respect the current filters."
+                </p>
+              </blockquote>
+              <p>
+                The orchestrator classifies this as implementation work and moves to planning.
+              </p>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--does">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">2</span>
+              <h2 class="shape-title">What the orchestrator does</h2>
+            </div>
+            <div class="shape-content">
+              <p>
+                The orchestrator proposes a plan: which agents will run, what each step produces,
+                and what "done" looks like. Once you confirm <GateGlyph variant="inline" />,
+                it starts the full pipeline.
+              </p>
+              <ol class="pipeline-steps">
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="architect" /></span>
+                  <span class="pipeline-step-desc">
+                    An architecture advisor surfaces risks, technical constraints, and system-level
+                    boundaries relevant to the change — before any code is written.
+                  </span>
+                </li>
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="plan" /></span>
+                  <span class="pipeline-step-desc">
+                    A tech-lead agent writes a step-by-step implementation plan with acceptance
+                    criteria for each step. The plan is the contract the build agents work to.
+                  </span>
+                </li>
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="build" /></span>
+                  <span class="pipeline-step-desc">
+                    Specialist agents implement each step of the plan, writing code and
+                    self-validating their output. Parallel steps run in separate containers
+                    simultaneously.
+                  </span>
+                </li>
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label">
+                    <RedBadge variant="inline" />
+                    <span class="pipeline-step-reds-label">Adversarial review</span>
+                  </span>
+                  <span class="pipeline-step-desc">
+                    Red agents read the completed diff specifically looking for problems — bugs,
+                    security issues, places where the code diverges from the plan. Their findings
+                    are recorded; a block stops the run for human review.
+                  </span>
+                </li>
+                <li class="pipeline-step">
+                  <span class="pipeline-step-label"><StageChip name="verify" /></span>
+                  <span class="pipeline-step-desc">
+                    A test engineer writes integration and E2E tests that confirm every
+                    path in the shipped diff. These are committed to the repo, not discarded.
+                  </span>
+                </li>
+              </ol>
+              <p class="gate-callout">
+                At each phase transition, the orchestrator reaches a gate <GateGlyph variant="inline" />.
+                It reads the phase output, forms a recommendation, and either advances automatically
+                or pauses to present findings for your review — depending on
+                how the workflow is configured.
+              </p>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--decide">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">3</span>
+              <h2 class="shape-title">What you see and decide</h2>
+            </div>
+            <div class="shape-content">
+              <ul class="decision-list">
+                <li class="decision-item">
+                  <strong>The plan, before any code is written.</strong>
+                  The orchestrator presents what it intends to build, step by step.
+                  You approve it or redirect — this gate <GateGlyph variant="inline" />
+                  is the cheapest moment to change direction.
+                </li>
+                <li class="decision-item">
+                  <strong>Gate summaries at each phase transition.</strong>
+                  The orchestrator tells you what the phase produced and whether adversarial
+                  review <RedBadge variant="inline" /> found anything worth your attention.
+                  You decide whether to advance, reject, or override.
+                </li>
+                <li class="decision-item">
+                  <strong>A final report of what shipped.</strong>
+                  What changed, what tests pass, what the reds found and how each finding
+                  was handled.
+                </li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="shape-card shape-card--get">
+            <div class="shape-header">
+              <span class="shape-number" aria-hidden="true">4</span>
+              <h2 class="shape-title">What you get</h2>
+            </div>
+            <div class="shape-content">
+              <ul class="outcome-list">
+                <li class="outcome-item">
+                  Code that has been planned against your brief, implemented by specialist
+                  agents, adversarially reviewed <RedBadge variant="inline" />, and
+                  covered by integration tests.
+                </li>
+                <li class="outcome-item">
+                  A complete audit trail — every agent's output, every gate decision, every
+                  finding from adversarial review <RedBadge variant="inline" /> — stored
+                  in the run record and addressable by run ID.
+                </li>
+                <li class="outcome-item">
+                  You never typed a forge command. The orchestrator ran the entire pipeline
+                  and only paused at the moments that genuinely needed your judgment.
+                </li>
+              </ul>
+            </div>
+          </li>
+
+        </ol>
+
+        <section class="bottom-nav-section" aria-labelledby="further-heading">
+          <h2 id="further-heading" class="bottom-nav-heading">Go further</h2>
+          <div class="bottom-nav-links">
+            <a href={DOCS.gates} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Gates</span>
+              <span class="bottom-nav-card-desc">How auto and human gates work in a run.</span>
+            </a>
+            <a href={DOCS.reds} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Adversarial review</span>
+              <span class="bottom-nav-card-desc">How red agents find problems in completed work.</span>
+            </a>
+            <a href={DOCS.workflows} class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Workflow definitions</span>
+              <span class="bottom-nav-card-desc">Configure which stages and gates run for your team.</span>
+            </a>
+            <a href="/how-forge-runs-work" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">How runs work</span>
+              <span class="bottom-nav-card-desc">The engineer's view of runs, tasks, gates, and reds.</span>
+            </a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </article>
+</MarketingLayout>
+
+<style>
+  .page-article {
+    color: var(--forge-color-text);
+    font-family: var(--forge-font-family-body);
+    font-size: var(--forge-font-size-base);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Hero ── */
+
+  .page-hero {
+    background: var(--forge-color-surface);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-16) var(--forge-space-6) var(--forge-space-12);
+  }
+
+  .hero-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .hero-headline {
+    font-family: var(--forge-font-family-display);
+    font-size: clamp(var(--forge-font-size-3xl), 5vw, var(--forge-font-size-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .hero-subhead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    max-width: 58ch;
+    margin: 0 0 var(--forge-space-4);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .hero-meta {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: 0;
+  }
+
+  .inline-link {
+    color: var(--forge-color-accent);
+    text-decoration: underline;
+    text-decoration-color: var(--forge-color-accent-subtle);
+    text-underline-offset: 2px;
+  }
+
+  .inline-link:hover {
+    text-decoration-color: var(--forge-color-accent);
+  }
+
+  .inline-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── Content body ── */
+
+  .content-body {
+    padding: var(--forge-space-12) var(--forge-space-6);
+  }
+
+  .content-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-12);
+  }
+
+  /* ── Shape flow ── */
+
+  .shape-flow {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+    counter-reset: shapes;
+  }
+
+  /* ── Shape cards ── */
+
+  .shape-card {
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    overflow: hidden;
+  }
+
+  .shape-card--say    { border-top: 3px solid var(--forge-color-border); }
+  .shape-card--does   { border-top: 3px solid var(--forge-color-accent); }
+  .shape-card--decide { border-top: 3px solid color-mix(in srgb, var(--forge-color-accent) 50%, var(--forge-color-border)); }
+  .shape-card--get    { border-top: 3px solid color-mix(in srgb, var(--forge-color-accent) 70%, var(--forge-color-border)); }
+
+  .shape-header {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-3);
+    padding: var(--forge-space-5) var(--forge-space-6) var(--forge-space-4);
+    background: var(--forge-color-surface-raised);
+    border-bottom: 1px solid var(--forge-color-border);
+  }
+
+  .shape-number {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--forge-color-accent);
+    color: var(--forge-color-text-on-accent);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    font-family: var(--forge-font-family-mono);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shape-title {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-lg);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--forge-color-text-strong);
+    margin: 0;
+  }
+
+  .shape-content {
+    padding: var(--forge-space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  .shape-content p {
+    margin: 0;
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Example quote ── */
+
+  .example-quote {
+    margin: 0;
+    padding: var(--forge-space-4) var(--forge-space-5);
+    background: var(--forge-color-surface-raised);
+    border-left: 3px solid var(--forge-color-accent-subtle);
+    border-radius: 0 var(--forge-radius-sm) var(--forge-radius-sm) 0;
+  }
+
+  .example-quote p {
+    font-style: italic;
+    color: var(--forge-color-text);
+  }
+
+  /* ── Pipeline steps ── */
+
+  .pipeline-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .pipeline-step {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: var(--forge-space-3);
+    padding: var(--forge-space-3);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-md);
+    align-items: start;
+  }
+
+  .pipeline-step-label {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-2);
+    padding-top: 1px;
+  }
+
+  .pipeline-step-reds-label {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+  }
+
+  .pipeline-step-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .gate-callout {
+    margin: 0;
+    padding: var(--forge-space-3) var(--forge-space-4);
+    background: color-mix(in srgb, var(--forge-color-accent) 5%, var(--forge-color-surface));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 20%, var(--forge-color-border));
+    border-radius: var(--forge-radius-md);
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Decision list ── */
+
+  .decision-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-4);
+  }
+
+  .decision-item {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    padding-left: var(--forge-space-5);
+    border-left: 2px solid var(--forge-color-accent-subtle);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .decision-item strong {
+    display: block;
+    color: var(--forge-color-text-strong);
+    font-weight: 600;
+    margin-bottom: var(--forge-space-1);
+  }
+
+  /* ── Outcome list ── */
+
+  .outcome-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .outcome-item {
+    display: flex;
+    gap: var(--forge-space-3);
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    line-height: var(--forge-line-height-relaxed);
+    align-items: flex-start;
+  }
+
+  .outcome-item::before {
+    content: '';
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--forge-color-accent);
+    margin-top: 7px;
+  }
+
+  /* ── Bottom nav ── */
+
+  .bottom-nav-section {
+    padding-top: var(--forge-space-4);
+  }
+
+  .bottom-nav-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .bottom-nav-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--forge-space-3);
+  }
+
+  .bottom-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+    padding: var(--forge-space-5);
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .bottom-nav-card:hover {
+    border-color: var(--forge-color-accent);
+    transform: translateY(-1px);
+  }
+
+  .bottom-nav-card:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+  }
+
+  .bottom-nav-card-title {
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+  }
+
+  .bottom-nav-card-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+  }
+
+  /* ── Responsive ── */
+
+  @media (max-width: 600px) {
+    .pipeline-step {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bottom-nav-card {
+      transition: none;
+    }
+
+    .bottom-nav-card:hover {
+      transform: none;
+    }
+  }
+</style>

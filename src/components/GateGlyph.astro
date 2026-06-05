@@ -1,0 +1,51 @@
+---
+interface Props {
+  variant?: 'card' | 'inline';
+}
+const { variant = 'card' } = Astro.props;
+---
+
+{variant === 'card' ? (
+  <div role="img" aria-label="Gate checkpoint" class="gate-marker">
+    <svg aria-hidden="true" class="gate-diamond" width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M7 1L13 7L7 13L1 7Z" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <span class="gate-label-text">Gate</span>
+  </div>
+) : (
+  <svg aria-hidden="true" class="gate-glyph" width="12" height="12" viewBox="0 0 14 14" fill="none">
+    <path d="M7 1L13 7L7 13L1 7Z" stroke="currentColor" stroke-width="1.5"/>
+  </svg>
+)}
+
+<style>
+  /* GSAP animation target — queried by ForgeRunDiagram.astro via .gate-marker selector */
+  .gate-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--forge-space-1);
+    padding: var(--forge-space-1) 0;
+    color: var(--forge-color-accent);
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+  }
+
+  .gate-diamond {
+    flex-shrink: 0;
+    color: var(--forge-color-accent);
+  }
+
+  .gate-label-text {
+    font-size: var(--forge-font-size-xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .gate-glyph {
+    display: inline-block;
+    vertical-align: middle;
+    color: var(--forge-color-accent);
+    flex-shrink: 0;
+  }
+</style>

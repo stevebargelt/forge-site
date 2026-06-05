@@ -1,5 +1,7 @@
 ---
 import { getCanonicalModel } from '../lib/forge-run-transform.js';
+import GateGlyph from './GateGlyph.astro';
+import RedBadge from './RedBadge.astro';
 
 const model = getCanonicalModel();
 
@@ -77,23 +79,13 @@ const STAGE_DESCRIPTIONS: Record<string, string> = {
           <div class="stage-card-header">
             <span class="stage-label">{stage.label}</span>
             {stage.hasReds && (
-              <span class="red-badge" aria-label="Adversarial review">
-                <svg aria-hidden="true" width="9" height="9" viewBox="0 0 10 10" fill="currentColor">
-                  <polygon points="5,0 10,3 10,7 5,10 0,7 0,3" />
-                </svg>
-                Adversarial review
-              </span>
+              <RedBadge />
             )}
           </div>
           <p class="stage-desc">{STAGE_DESCRIPTIONS[stage.id]}</p>
         </div>
         {stage.hasGate && (
-          <div role="separator" aria-label="Gate checkpoint" class="gate-marker">
-            <svg aria-hidden="true" class="gate-diamond" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 1L13 7L7 13L1 7Z" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-            <span class="gate-label-text">Gate</span>
-          </div>
+          <GateGlyph />
         )}
       </li>
     ))}
@@ -266,44 +258,6 @@ const STAGE_DESCRIPTIONS: Record<string, string> = {
     color: var(--forge-color-border);
     line-height: 1.5;
     margin: 0;
-  }
-
-  /* ── Red badge ────────────────────────────────────────────── */
-  .red-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--forge-space-1);
-    padding: 2px var(--forge-space-2);
-    background: color-mix(in srgb, var(--forge-color-accent) 12%, var(--forge-color-surface-raised));
-    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 30%, var(--forge-color-border));
-    border-radius: var(--forge-radius-sm);
-    font-family: var(--forge-font-family-mono);
-    font-size: var(--forge-font-size-xs);
-    color: var(--forge-color-accent);
-    white-space: nowrap;
-  }
-
-  /* ── Gate marker ──────────────────────────────────────────── */
-  .gate-marker {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--forge-space-1);
-    padding: var(--forge-space-1) 0;
-    color: var(--forge-color-accent);
-    font-family: var(--forge-font-family-mono);
-    font-size: var(--forge-font-size-xs);
-  }
-
-  .gate-diamond {
-    flex-shrink: 0;
-    color: var(--forge-color-accent);
-  }
-
-  .gate-label-text {
-    font-size: var(--forge-font-size-xs);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
   }
 
   /* ── Responsive ───────────────────────────────────────────── */

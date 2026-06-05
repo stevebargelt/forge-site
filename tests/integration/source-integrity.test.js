@@ -137,6 +137,9 @@ describe('source page files exist', () => {
     'src/pages/how-forge-runs-work.astro',
     'src/pages/what-forge-does.astro',
     'src/content/docs/index.mdx',
+    'src/pages/add-a-feature.astro',
+    'src/pages/do-research.astro',
+    'src/pages/kick-off-a-project.astro',
   ];
 
   for (const p of pages) {
@@ -210,4 +213,34 @@ describe('docs/index.mdx content', () => {
       assert.ok(new RegExp(c).test(src), `docs/index.mdx must reference concept: ${c}`);
     }
   });
+});
+
+// ── Walkthrough page integrity ─────────────────────────────────────────────
+
+describe('walkthrough pages: no internal model or CLI leakage', () => {
+  const walkthroughPages = [
+    'src/pages/add-a-feature.astro',
+    'src/pages/do-research.astro',
+    'src/pages/kick-off-a-project.astro',
+  ];
+
+  for (const page of walkthroughPages) {
+    it(`${page}: no getCanonicalModel or forge-run-transform references`, () => {
+      const src = readSource(page);
+      assert.ok(
+        !/getCanonicalModel|forge-run-transform/.test(src),
+        `${page} must not reference internal identifiers getCanonicalModel or forge-run-transform`
+      );
+    });
+
+    it(`${page}: no bare inline CLI command in a <code> element outside DOCS-linked context`, () => {
+      const src = readSource(page);
+      // A bare CLI invocation is a forge subcommand + agent/argument inside a <code> element,
+      // not wrapped in an anchor href. e.g. <code>forge invoke some-agent</code> is a violation.
+      assert.ok(
+        !/<code[^>]*>forge\s+(invoke|new|watch|gate|backlog|status|next)\s+\S+<\/code>/.test(src),
+        `${page} must not have bare forge CLI commands in <code> elements — link via DOCS const instead`
+      );
+    });
+  }
 });

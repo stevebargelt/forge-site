@@ -34,9 +34,10 @@
   --forge-color-border: hsl(220, 15%, 88%);
 
   /* ── Color: Text ───────────────────────────────────────────────────── */
-  --forge-color-text:        hsl(220, 12%, 28%);
-  --forge-color-text-strong: hsl(220, 18%, 10%);
-  --forge-color-text-muted:  hsl(220, 10%, 50%);
+  --forge-color-text:           hsl(220, 12%, 28%);
+  --forge-color-text-strong:    hsl(220, 18%, 10%);
+  --forge-color-text-muted:     hsl(220, 10%, 50%);
+  --forge-color-text-on-accent: hsl(0, 0%, 100%);
 
   /* ── Typography: Font families ─────────────────────────────────────── */
   --forge-font-family-body:    'Inter', system-ui, -apple-system, sans-serif;
