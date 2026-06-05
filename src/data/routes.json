@@ -1,0 +1,145 @@
+{
+  "provenance": {
+    "generatedFrom": "forge@bbb1c13",
+    "fullSha": "bbb1c136b5723e63d653a05d100f00b3d1a40fc8",
+    "capturedAt": "2026-06-05T00:00:00.000Z"
+  },
+  "accountable": "human",
+  "routes": [
+    {
+      "key": "strategy",
+      "classification_hints": [
+        "what should I prioritize",
+        "is this worth building",
+        "what's the LOE"
+      ],
+      "consulted": [],
+      "responsible": "orchestrator",
+      "path": "in_session",
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": [],
+      "source": "host",
+      "raciSnippet": "### route: strategy\n\nclassification_hints: what should I prioritize, is this worth building, what's the LOE\nresponsible: orchestrator\naccountable: human\npath: in_session\nconsulted: none\nrequired_followups: none\ninformed: user_summary\nforce_rules: none"
+    },
+    {
+      "key": "implementation_quick",
+      "classification_hints": [
+        "bug fix",
+        "small feature",
+        "ui tweak",
+        "targeted refactor",
+        "precedent-based multi-file change",
+        "existing implementation plan",
+        "clear bounded change"
+      ],
+      "consulted": [
+        "affected_code",
+        "existing_tests"
+      ],
+      "responsible": "engineer",
+      "path": "invoke_chain",
+      "required_followups": [
+        "test-engineer"
+      ],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "backlog",
+          "when": "ticketed"
+        },
+        {
+          "name": "docs_impact",
+          "when": "operator_behavior_changed"
+        }
+      ],
+      "force_rules": [],
+      "source": "host",
+      "raciSnippet": "### route: implementation_quick\n\nclassification_hints: bug fix, small feature, ui tweak, targeted refactor, precedent-based multi-file change, existing implementation plan, clear bounded change\nresponsible: engineer\naccountable: human\npath: invoke_chain\nconsulted: affected_code, existing_tests\nrequired_followups: test-engineer\ninformed: user_summary, backlog:when=ticketed, docs_impact:when=operator_behavior_changed\nforce_rules: none"
+    },
+    {
+      "key": "implementation_full",
+      "classification_hints": [
+        "architectural novelty",
+        "unclear boundaries",
+        "missing implementation plan",
+        "new integration shape",
+        "high-risk decomposition"
+      ],
+      "consulted": [],
+      "responsible": "feature",
+      "path": "workflow",
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "backlog",
+          "when": "ticketed"
+        },
+        {
+          "name": "docs_impact",
+          "when": "operator_behavior_changed"
+        }
+      ],
+      "force_rules": [],
+      "source": "host",
+      "raciSnippet": "### route: implementation_full\n\nclassification_hints: architectural novelty, unclear boundaries, missing implementation plan, new integration shape, high-risk decomposition\nresponsible: feature\naccountable: human\npath: workflow\nconsulted: none\nrequired_followups: none\ninformed: user_summary, backlog:when=ticketed, docs_impact:when=operator_behavior_changed\nforce_rules: none"
+    },
+    {
+      "key": "review_security",
+      "classification_hints": [
+        "security audit",
+        "auth review",
+        "crypto review",
+        "secrets review"
+      ],
+      "consulted": [
+        "affected_code"
+      ],
+      "responsible": "red-security",
+      "path": "invoke",
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": [],
+      "source": "host",
+      "raciSnippet": "### route: review_security\n\nclassification_hints: security audit, auth review, crypto review, secrets review\nresponsible: red-security\naccountable: human\npath: invoke\nconsulted: affected_code\nrequired_followups: none\ninformed: user_summary\nforce_rules: none"
+    },
+    {
+      "key": "documentation_durable",
+      "classification_hints": [
+        "document how X works",
+        "write a how-to",
+        "update operator docs",
+        "write an ADR"
+      ],
+      "consulted": [],
+      "responsible": "documentation-maintainer",
+      "path": "invoke",
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "docs_impact",
+          "when": "operator_behavior_changed"
+        }
+      ],
+      "force_rules": [],
+      "source": "host",
+      "raciSnippet": "### route: documentation_durable\n\nclassification_hints: document how X works, write a how-to, update operator docs, write an ADR\nresponsible: documentation-maintainer\naccountable: human\npath: invoke\nconsulted: none\nrequired_followups: none\ninformed: user_summary, docs_impact:when=operator_behavior_changed\nforce_rules: none"
+    }
+  ]
+}

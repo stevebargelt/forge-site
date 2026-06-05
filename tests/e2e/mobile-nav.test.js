@@ -32,7 +32,7 @@ test.describe('mobile nav at 375 × 812', () => {
     expect(ariaHidden).toBeNull();
 
     const linkCount = await page.locator('.nav-mobile-link').count();
-    expect(linkCount).toBe(6);
+    expect(linkCount).toBe(7);
   });
 
   test('Escape closes mobile nav and returns focus to hamburger button', async ({ page }) => {

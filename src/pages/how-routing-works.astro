@@ -1,0 +1,1233 @@
+---
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import GateGlyph from '../components/GateGlyph.astro';
+import RedBadge from '../components/RedBadge.astro';
+import StageChip from '../components/StageChip.astro';
+import ProvenanceMarker from '../components/ProvenanceMarker.astro';
+import routesData from '../data/routes.json';
+
+const { provenance, accountable, routes } = routesData;
+
+const FORGE_COMMIT_BASE = 'https://github.com/forge-ai/forge/commit/';
+const provenanceHref = `${FORGE_COMMIT_BASE}${provenance.fullSha}`;
+
+const PATH_DESCRIPTIONS: Record<string, { label: string; desc: string }> = {
+  in_session:   { label: 'in_session',   desc: 'Orchestrator handles it in the conversation. No container, no run row.' },
+  invoke:       { label: 'invoke',       desc: 'forge invoke <agent> — one container, returns when done.' },
+  invoke_chain: { label: 'invoke_chain', desc: 'A sequence of invokes the orchestrator drives (e.g. engineer → test-engineer).' },
+  workflow:     { label: 'workflow',     desc: 'forge new <workflow> — multi-step run with gates and reds.' },
+  manual:       { label: 'manual',       desc: 'Irreducibly human work on the host. No agent dispatched.' },
+  cli:          { label: 'cli',          desc: 'A direct forge CLI operation; command is in the route block.' },
+};
+
+const WORKFLOW_STAGES = ['architect', 'plan', 'build', 'verify'] as const;
+---
+
+<MarketingLayout
+  title="How routing works"
+  description="How forge's human-authored RACI compiles to an executable routing policy — five curated routes from real forge data."
+>
+  <article class="page-article">
+
+    <header class="page-hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">RACI to routing policy</p>
+        <h1 class="hero-headline">How routing works</h1>
+        <p class="hero-subhead">
+          Every request the orchestrator receives is classified, matched against a routing policy,
+          and dispatched. That policy is compiled — automatically, with a validated audit trail —
+          from a human-authored RACI file. This page shows the five routes whose path spread
+          covers every dispatch mechanism forge supports.
+        </p>
+        <div class="hero-provenance">
+          <ProvenanceMarker generatedFrom={provenance.generatedFrom} linkHref={provenanceHref} />
+        </div>
+      </div>
+    </header>
+
+    <nav class="toc-nav" aria-label="On this page">
+      <div class="toc-inner">
+        <p class="toc-label">On this page</p>
+        <ol class="toc-list" role="list">
+          <li><a href="#routing-loop" class="toc-link">Routing loop</a></li>
+          <li><a href="#raci-to-policy" class="toc-link">RACI to policy</a></li>
+          <li><a href="#route-cards" class="toc-link">Route cards</a></li>
+          <li><a href="#governance" class="toc-link">Governance invariants</a></li>
+        </ol>
+      </div>
+    </nav>
+
+    <div class="content-body">
+      <div class="content-inner">
+
+        <!-- ── Routing loop strip ── -->
+        <section class="routing-loop-section" id="routing-loop" aria-labelledby="routing-loop-heading">
+          <h2 id="routing-loop-heading" class="section-heading">The routing loop</h2>
+          <p class="section-lead">
+            Every prompt goes through the same six-step cycle before any work starts.
+          </p>
+
+          <div class="loop-strip" role="list" aria-label="Routing loop steps">
+            <div class="loop-step" role="listitem">
+              <span class="loop-step-label">prompt</span>
+              <span class="loop-step-desc">Incoming request from user</span>
+            </div>
+            <div class="loop-arrow" aria-hidden="true">→</div>
+            <div class="loop-step" role="listitem">
+              <span class="loop-step-label">classify</span>
+              <span class="loop-step-desc">Map to a work type</span>
+            </div>
+            <div class="loop-arrow" aria-hidden="true">→</div>
+            <div class="loop-step" role="listitem">
+              <span class="loop-step-label">work type</span>
+              <span class="loop-step-desc">strategy · implementation · review · …</span>
+            </div>
+            <div class="loop-arrow" aria-hidden="true">→</div>
+            <div class="loop-step" role="listitem">
+              <span class="loop-step-label">route key</span>
+              <span class="loop-step-desc">Lookup in compiled policy</span>
+            </div>
+            <div class="loop-arrow" aria-hidden="true">→</div>
+            <div class="loop-step" role="listitem">
+              <span class="loop-step-label">route block</span>
+              <span class="loop-step-desc">Responsible + path + consulted + followups</span>
+            </div>
+            <div class="loop-arrow" aria-hidden="true">→</div>
+            <div class="loop-step" role="listitem">
+              <span class="loop-step-label">dispatch</span>
+              <span class="loop-step-desc">Execute by path</span>
+            </div>
+          </div>
+
+          <div class="path-types" aria-label="Available dispatch paths">
+            <h3 class="path-types-heading">Dispatch paths</h3>
+            <ul class="path-list" role="list">
+              {Object.values(PATH_DESCRIPTIONS).map(({ label, desc }) => (
+                <li class="path-item" role="listitem">
+                  <code class="path-chip">{label}</code>
+                  <span class="path-desc">{desc}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <!-- ── RACI to policy: headline visual ── -->
+        <section class="compile-section" id="raci-to-policy" aria-labelledby="compile-heading">
+          <h2 id="compile-heading" class="section-heading">RACI to policy</h2>
+          <p class="section-lead">
+            The routing policy is never hand-edited. A human authors the RACI source; forge compiles
+            it to the executable policy the orchestrator routes from. The pairs below show the
+            correspondence for each curated route — source on the left, compiled on the right.
+          </p>
+          <p class="compile-process-note" aria-label="Compile process">
+            <span class="compile-badge" aria-hidden="true">forge raci propose</span>
+            <span class="visually-hidden">Process:</span>
+            Human RACI source
+            <span aria-hidden="true">→</span>
+            <span class="visually-hidden">compiles to</span>
+            gate · validate · compile · apply
+            <span aria-hidden="true">→</span>
+            Executable routing policy
+          </p>
+
+          <div class="compile-pairs">
+            {routes.map((route) => (
+              <article
+                class="compile-pair"
+                aria-label={`Route ${route.key}: RACI source and compiled policy`}
+              >
+                <header class="compile-pair-header">
+                  <span class="compile-route-key">{route.key}</span>
+                  <code class="compile-path-chip" aria-label={`path: ${route.path}`}>{route.path}</code>
+                </header>
+
+                <div class="compile-pair-body">
+                  <div class="compile-source" aria-label="Human RACI source">
+                    <p class="compile-side-label" aria-hidden="true">RACI source</p>
+                    <pre class="raci-snippet"><code>{route.raciSnippet}</code></pre>
+                  </div>
+
+                  <div class="compile-arrow-col" aria-hidden="true">
+                    <span class="compile-arrow-text">forge route compile</span>
+                    <svg class="compile-arrow-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+
+                  <div class="compile-result" aria-label="Compiled executable route">
+                    <p class="compile-side-label" aria-hidden="true">Compiled route</p>
+                    <dl class="compiled-fields">
+                      <div class="compiled-field">
+                        <dt>responsible</dt>
+                        <dd><code>{route.responsible}</code></dd>
+                      </div>
+                      <div class="compiled-field">
+                        <dt>path</dt>
+                        <dd><code>{route.path}</code></dd>
+                      </div>
+                      {route.consulted.length > 0 && (
+                        <div class="compiled-field">
+                          <dt>consulted</dt>
+                          <dd>{route.consulted.join(', ')}</dd>
+                        </div>
+                      )}
+                      {route.required_followups.length > 0 && (
+                        <div class="compiled-field">
+                          <dt>required_followups</dt>
+                          <dd>{route.required_followups.join(', ')}</dd>
+                        </div>
+                      )}
+                      <div class="compiled-field">
+                        <dt>accountable</dt>
+                        <dd><strong>{accountable}</strong></dd>
+                      </div>
+                      <div class="compiled-field">
+                        <dt>source</dt>
+                        <dd>{route.source}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <!-- ── Route cards: causal execution shape ── -->
+        <section class="cards-section" id="route-cards" aria-labelledby="cards-heading">
+          <h2 id="cards-heading" class="section-heading">Route execution shapes</h2>
+          <p class="section-lead">
+            Each route has a causal execution structure: what's consulted before the work starts,
+            who does the responsible work, what must happen after, and who is informed. The cards
+            below show this structure for the five curated routes.
+          </p>
+
+          <div class="route-cards">
+            {routes.map((route) => {
+              const isReviewSecurity = route.key === 'review_security';
+              const isImplFull = route.key === 'implementation_full';
+              const hasConditioned = route.informed.some((i) => i.when);
+              return (
+                <article class="route-card" aria-labelledby={`card-heading-${route.key}`}>
+                  <header class="route-card-header">
+                    <h3 id={`card-heading-${route.key}`} class="route-card-title">{route.key}</h3>
+                    <div class="route-card-badges">
+                      <code class="path-chip path-chip--card">{route.path}</code>
+                      {isReviewSecurity && <RedBadge variant="card" />}
+                    </div>
+                  </header>
+
+                  <div class="route-card-hints">
+                    <p class="hints-label">Classify when prompt sounds like:</p>
+                    <ul class="hints-list" role="list">
+                      {route.classification_hints.slice(0, 3).map((h) => (
+                        <li class="hint-item" role="listitem">{h}</li>
+                      ))}
+                      {route.classification_hints.length > 3 && (
+                        <li class="hint-item hint-item--more" role="listitem">
+                          +{route.classification_hints.length - 3} more
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+
+                  <div class="causal-flow" aria-label={`Execution flow for ${route.key}`}>
+
+                    {route.consulted.length > 0 && (
+                      <div class="causal-step causal-step--consulted">
+                        <span class="causal-label">consulted <span class="causal-timing">(before)</span></span>
+                        <ul class="causal-items" role="list">
+                          {route.consulted.map((c) => (
+                            <li role="listitem"><code class="causal-value">{c}</code></li>
+                          ))}
+                        </ul>
+                        <div class="causal-arrow" aria-hidden="true">↓</div>
+                      </div>
+                    )}
+
+                    <div class="causal-step causal-step--responsible">
+                      <span class="causal-label">responsible</span>
+                      <div class="causal-responsible-body">
+                        <code class="causal-value causal-value--primary">{route.responsible}</code>
+                        {isImplFull && (
+                          <div class="workflow-stages" aria-label="Pipeline stages">
+                            <div class="workflow-stage-list" role="list">
+                              {WORKFLOW_STAGES.map((stage, i) => (
+                                <div class="workflow-stage-item" role="listitem">
+                                  <StageChip name={stage} />
+                                  {i < WORKFLOW_STAGES.length - 1 && (
+                                    <>
+                                      <GateGlyph variant="inline" />
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {route.required_followups.length > 0 && (
+                      <>
+                        <div class="causal-arrow" aria-hidden="true">↓</div>
+                        <div class="causal-step causal-step--followups">
+                          <span class="causal-label">required_followups <span class="causal-timing">(mandatory after)</span></span>
+                          <ul class="causal-items" role="list">
+                            {route.required_followups.map((f) => (
+                              <li role="listitem"><code class="causal-value">{f}</code></li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
+
+                    {route.informed.length > 0 && (
+                      <>
+                        <div class="causal-arrow" aria-hidden="true">↓</div>
+                        <div class="causal-step causal-step--informed">
+                          <span class="causal-label">informed <span class="causal-timing">(after)</span></span>
+                          <ul class="causal-items" role="list">
+                            {route.informed.map((entry) => (
+                              <li role="listitem">
+                                <code class="causal-value">{entry.name}</code>
+                                {entry.when && (
+                                  <span class="causal-when" aria-label={`when ${entry.when}`}>
+                                    when={entry.when}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <!-- ── Governance invariants ── -->
+        <section class="governance-section" id="governance" aria-labelledby="governance-heading">
+          <h2 id="governance-heading" class="section-heading">Governance invariants</h2>
+          <p class="section-lead">
+            These rules hold across every route in the policy. They are enforced by the compiler
+            and the validator; a policy that violates them does not ship.
+          </p>
+
+          <div class="invariants">
+            <div class="invariant">
+              <div class="invariant-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="invariant-body">
+                <h3 class="invariant-title"><code>accountable: human</code> on every route</h3>
+                <p class="invariant-desc">
+                  No matter which agent does the work, a human is always accountable for the outcome.
+                  The compiler hoists this to the policy header and rejects any route block that omits
+                  or contradicts it. It is not a convention — it is enforced.
+                </p>
+              </div>
+            </div>
+
+            <div class="invariant">
+              <div class="invariant-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 3L17 7v6l-7 4-7-4V7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                  <path d="M10 3v14M3 7l7 4 7-4" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="invariant-body">
+                <h3 class="invariant-title">Project overrides fully replace but cannot weaken force rules</h3>
+                <p class="invariant-desc">
+                  A project can copy the RACI to <code>.forge/forge-raci.md</code> and specialize any
+                  route. That override fully replaces the host policy for that project — but it cannot
+                  remove or soften a force rule the host mandates. The validator refuses it.
+                  Specialization without weakening: that is the governance contract.
+                </p>
+              </div>
+            </div>
+
+            <div class="invariant">
+              <div class="invariant-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M7 9h6M7 12h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                  <path d="M7 6h2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="invariant-body">
+                <h3 class="invariant-title">Every routing change is audited</h3>
+                <p class="invariant-desc">
+                  Changing routing goes through a gated authoring channel:
+                  <code>forge raci propose</code> (validates and diffs, never writes),
+                  human review, then <code>forge raci apply --confirm</code> (re-validates before
+                  writing). Every apply appends a JSONL entry to <code>~/.forge/raci-audit.log</code>.
+                  No change to routing policy happens outside this channel.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Bottom nav ── -->
+        <section class="bottom-nav-section" aria-labelledby="further-heading">
+          <h2 id="further-heading" class="bottom-nav-heading">Go further</h2>
+          <div class="bottom-nav-links">
+            <a href="/how-forge-runs-work" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">How runs work</span>
+              <span class="bottom-nav-card-desc">The engineer's view of runs, tasks, gates, and reds.</span>
+            </a>
+            <a href="/add-a-feature" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Add a feature</span>
+              <span class="bottom-nav-card-desc">Walk through routing a feature end to end.</span>
+            </a>
+            <a href="/do-research" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Do research</span>
+              <span class="bottom-nav-card-desc">See how the research route dispatches a specialist.</span>
+            </a>
+            <a href="/docs/" class="bottom-nav-card">
+              <span class="bottom-nav-card-title">Reference docs</span>
+              <span class="bottom-nav-card-desc">CLI flags, YAML schema, and workflow definitions.</span>
+            </a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </article>
+</MarketingLayout>
+
+<style>
+  .page-article {
+    color: var(--forge-color-text);
+    font-family: var(--forge-font-family-body);
+    font-size: var(--forge-font-size-base);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Visually hidden utility ── */
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ── Hero ── */
+
+  .page-hero {
+    background: var(--forge-color-surface);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-16) var(--forge-space-6) var(--forge-space-12);
+  }
+
+  .hero-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+  }
+
+  .hero-eyebrow {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--forge-color-accent);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .hero-headline {
+    font-family: var(--forge-font-family-display);
+    font-size: clamp(var(--forge-font-size-3xl), 5vw, var(--forge-font-size-5xl));
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .hero-subhead {
+    font-size: var(--forge-font-size-lg);
+    color: var(--forge-color-text-muted);
+    max-width: 60ch;
+    margin: 0 0 var(--forge-space-6);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .hero-provenance {
+    margin: 0;
+  }
+
+  /* ── ToC ── */
+
+  .toc-nav {
+    background: var(--forge-color-surface-raised);
+    border-bottom: 1px solid var(--forge-color-border);
+    padding: var(--forge-space-4) var(--forge-space-6);
+  }
+
+  .toc-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: var(--forge-space-4);
+    flex-wrap: wrap;
+  }
+
+  .toc-label {
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--forge-color-text-muted);
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .toc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--forge-space-1) var(--forge-space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .toc-link {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .toc-link:hover {
+    color: var(--forge-color-accent);
+  }
+
+  .toc-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ── Content body ── */
+
+  .content-body {
+    padding: var(--forge-space-12) var(--forge-space-6);
+  }
+
+  .content-inner {
+    max-width: var(--forge-layout-max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-20);
+  }
+
+  /* ── Shared section styles ── */
+
+  .section-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-3);
+  }
+
+  .section-lead {
+    color: var(--forge-color-text-muted);
+    max-width: 70ch;
+    margin: 0 0 var(--forge-space-8);
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  /* ── Routing loop strip ── */
+
+  .routing-loop-section {
+    border-bottom: 1px solid var(--forge-color-border);
+    padding-bottom: var(--forge-space-12);
+  }
+
+  .loop-strip {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--forge-space-2);
+    flex-wrap: wrap;
+    margin-bottom: var(--forge-space-10);
+    padding: var(--forge-space-6);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+  }
+
+  .loop-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--forge-space-1);
+    min-width: 90px;
+    text-align: center;
+  }
+
+  .loop-step-label {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--forge-color-accent);
+    background: color-mix(in srgb, var(--forge-color-accent) 10%, var(--forge-color-surface));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 25%, var(--forge-color-border));
+    border-radius: var(--forge-radius-md);
+    padding: var(--forge-space-1) var(--forge-space-3);
+    white-space: nowrap;
+  }
+
+  .loop-step-desc {
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-text-muted);
+    max-width: 120px;
+  }
+
+  .loop-arrow {
+    color: var(--forge-color-text-muted);
+    font-size: var(--forge-font-size-lg);
+    align-self: center;
+    padding-bottom: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ── Path types ── */
+
+  .path-types-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-4);
+  }
+
+  .path-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .path-item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--forge-space-3);
+  }
+
+  .path-chip {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--forge-color-accent);
+    background: color-mix(in srgb, var(--forge-color-accent) 8%, var(--forge-color-surface-raised));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 20%, var(--forge-color-border));
+    border-radius: var(--forge-radius-sm);
+    padding: 1px var(--forge-space-2);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .path-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+  }
+
+  /* ── RACI to policy compile pairs ── */
+
+  .compile-section {
+    border-bottom: 1px solid var(--forge-color-border);
+    padding-bottom: var(--forge-space-12);
+  }
+
+  .compile-process-note {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-3);
+    flex-wrap: wrap;
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: calc(-1 * var(--forge-space-4)) 0 var(--forge-space-8);
+  }
+
+  .compile-badge {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    color: var(--forge-color-accent);
+    background: color-mix(in srgb, var(--forge-color-accent) 10%, var(--forge-color-surface-raised));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 25%, var(--forge-color-border));
+    border-radius: var(--forge-radius-sm);
+    padding: 1px var(--forge-space-2);
+  }
+
+  .compile-pairs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-10);
+  }
+
+  .compile-pair {
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    overflow: hidden;
+  }
+
+  .compile-pair-header {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-3);
+    padding: var(--forge-space-4) var(--forge-space-5);
+    background: var(--forge-color-surface-raised);
+    border-bottom: 1px solid var(--forge-color-border);
+  }
+
+  .compile-route-key {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-sm);
+    font-weight: 700;
+    color: var(--forge-color-text-strong);
+  }
+
+  .compile-path-chip {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-accent);
+    background: color-mix(in srgb, var(--forge-color-accent) 8%, var(--forge-color-surface));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 20%, var(--forge-color-border));
+    border-radius: var(--forge-radius-sm);
+    padding: 1px var(--forge-space-2);
+  }
+
+  .compile-pair-body {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+  }
+
+  .compile-source,
+  .compile-result {
+    padding: var(--forge-space-5);
+  }
+
+  .compile-source {
+    border-right: 1px solid var(--forge-color-border);
+    background: var(--forge-color-surface-sunken);
+  }
+
+  .compile-result {
+    background: var(--forge-color-surface);
+  }
+
+  .compile-side-label {
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--forge-color-text-muted);
+    margin: 0 0 var(--forge-space-3);
+  }
+
+  .compile-arrow-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--forge-space-2);
+    padding: var(--forge-space-4);
+    color: var(--forge-color-text-muted);
+    border-right: 1px solid var(--forge-color-border);
+    background: var(--forge-color-surface-raised);
+  }
+
+  .compile-arrow-text {
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-accent);
+    font-family: var(--forge-font-family-mono);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    rotate: 180deg;
+  }
+
+  .compile-arrow-icon {
+    color: var(--forge-color-accent);
+  }
+
+  .raci-snippet {
+    margin: 0;
+    padding: 0;
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    line-height: 1.7;
+    color: var(--forge-color-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+
+  .raci-snippet code {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  .compiled-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-2);
+    margin: 0;
+  }
+
+  .compiled-field {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: var(--forge-space-2);
+    font-size: var(--forge-font-size-sm);
+    align-items: baseline;
+  }
+
+  .compiled-field dt {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-text-muted);
+    font-weight: 500;
+  }
+
+  .compiled-field dd {
+    margin: 0;
+    color: var(--forge-color-text);
+  }
+
+  .compiled-field dd code {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-sm);
+    padding: 1px var(--forge-space-2);
+    color: var(--forge-color-text-strong);
+  }
+
+  .compiled-field dd strong {
+    color: var(--forge-color-accent);
+    font-weight: 600;
+  }
+
+  /* ── Route cards ── */
+
+  .cards-section {
+    border-bottom: 1px solid var(--forge-color-border);
+    padding-bottom: var(--forge-space-12);
+  }
+
+  .route-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--forge-space-5);
+  }
+
+  .route-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-5);
+    padding: var(--forge-space-5);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+  }
+
+  .route-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--forge-space-3);
+  }
+
+  .route-card-title {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-sm);
+    font-weight: 700;
+    color: var(--forge-color-text-strong);
+    margin: 0;
+  }
+
+  .route-card-badges {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-2);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+
+  .path-chip--card {
+    font-size: var(--forge-font-size-xs);
+  }
+
+  /* ── Route hints ── */
+
+  .route-card-hints {
+    font-size: var(--forge-font-size-sm);
+  }
+
+  .hints-label {
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--forge-color-text-muted);
+    margin: 0 0 var(--forge-space-2);
+  }
+
+  .hints-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hint-item {
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-text-muted);
+    font-family: var(--forge-font-family-mono);
+  }
+
+  .hint-item::before {
+    content: '– ';
+    color: var(--forge-color-border);
+  }
+
+  .hint-item--more {
+    color: var(--forge-color-accent);
+    font-style: italic;
+  }
+
+  .hint-item--more::before {
+    content: '';
+  }
+
+  /* ── Causal flow ── */
+
+  .causal-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+  }
+
+  .causal-step {
+    padding: var(--forge-space-3) var(--forge-space-4);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-md);
+    background: var(--forge-color-surface);
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-2);
+  }
+
+  .causal-step--responsible {
+    border-color: color-mix(in srgb, var(--forge-color-accent) 30%, var(--forge-color-border));
+    background: color-mix(in srgb, var(--forge-color-accent) 5%, var(--forge-color-surface));
+  }
+
+  .causal-step--consulted {
+    background: var(--forge-color-surface-sunken);
+  }
+
+  .causal-label {
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--forge-color-text-muted);
+  }
+
+  .causal-timing {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .causal-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+  }
+
+  .causal-items li {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-2);
+  }
+
+  .causal-value {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-sm);
+    padding: 1px var(--forge-space-2);
+    color: var(--forge-color-text-strong);
+  }
+
+  .causal-value--primary {
+    font-size: var(--forge-font-size-sm);
+    font-weight: 700;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--forge-color-accent);
+  }
+
+  .causal-when {
+    font-family: var(--forge-font-family-mono);
+    font-size: var(--forge-font-size-xs);
+    color: var(--forge-color-text-muted);
+    font-style: italic;
+  }
+
+  .causal-responsible-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-3);
+  }
+
+  .causal-arrow {
+    text-align: center;
+    color: var(--forge-color-text-muted);
+    font-size: var(--forge-font-size-base);
+    padding: var(--forge-space-1) 0;
+    line-height: 1;
+  }
+
+  /* ── Workflow stages (implementation_full) ── */
+
+  .workflow-stages {
+    margin-top: var(--forge-space-2);
+  }
+
+  .workflow-stage-list {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-2);
+    flex-wrap: wrap;
+  }
+
+  .workflow-stage-item {
+    display: flex;
+    align-items: center;
+    gap: var(--forge-space-2);
+  }
+
+  /* ── Governance invariants ── */
+
+  .invariants {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-6);
+  }
+
+  .invariant {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: var(--forge-space-4);
+    padding: var(--forge-space-6);
+    background: var(--forge-color-surface-raised);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    align-items: flex-start;
+  }
+
+  .invariant-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--forge-color-accent) 10%, var(--forge-color-surface));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 20%, var(--forge-color-border));
+    border-radius: var(--forge-radius-md);
+    color: var(--forge-color-accent);
+    flex-shrink: 0;
+  }
+
+  .invariant-title {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-base);
+    font-weight: 700;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-2);
+  }
+
+  .invariant-title code {
+    font-family: var(--forge-font-family-mono);
+    font-size: 0.88em;
+    color: var(--forge-color-accent);
+    background: color-mix(in srgb, var(--forge-color-accent) 8%, var(--forge-color-surface));
+    border: 1px solid color-mix(in srgb, var(--forge-color-accent) 20%, var(--forge-color-border));
+    border-radius: var(--forge-radius-sm);
+    padding: 1px var(--forge-space-2);
+  }
+
+  .invariant-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+    margin: 0;
+    line-height: var(--forge-line-height-relaxed);
+  }
+
+  .invariant-desc code {
+    font-family: var(--forge-font-family-mono);
+    font-size: 0.88em;
+    background: var(--forge-color-surface-sunken);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-sm);
+    padding: 1px var(--forge-space-2);
+    color: var(--forge-color-text-strong);
+  }
+
+  /* ── Bottom nav ── */
+
+  .bottom-nav-section {
+    padding-top: var(--forge-space-4);
+  }
+
+  .bottom-nav-heading {
+    font-family: var(--forge-font-family-display);
+    font-size: var(--forge-font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--forge-color-text-strong);
+    margin: 0 0 var(--forge-space-6);
+  }
+
+  .bottom-nav-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--forge-space-3);
+  }
+
+  .bottom-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+    padding: var(--forge-space-5);
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-lg);
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .bottom-nav-card:hover {
+    border-color: var(--forge-color-accent);
+    transform: translateY(-1px);
+  }
+
+  .bottom-nav-card:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+  }
+
+  .bottom-nav-card-title {
+    font-size: var(--forge-font-size-base);
+    font-weight: 600;
+    color: var(--forge-color-text-strong);
+  }
+
+  .bottom-nav-card-desc {
+    font-size: var(--forge-font-size-sm);
+    color: var(--forge-color-text-muted);
+  }
+
+  /* ── Responsive ── */
+
+  @media (max-width: 780px) {
+    .compile-pair-body {
+      grid-template-columns: 1fr;
+    }
+
+    .compile-source {
+      border-right: none;
+      border-bottom: 1px solid var(--forge-color-border);
+    }
+
+    .compile-arrow-col {
+      flex-direction: row;
+      justify-content: flex-start;
+      padding: var(--forge-space-3) var(--forge-space-5);
+      border-right: none;
+      border-bottom: 1px solid var(--forge-color-border);
+    }
+
+    .compile-arrow-text {
+      writing-mode: horizontal-tb;
+      rotate: none;
+    }
+
+    .compile-arrow-icon {
+      rotate: 90deg;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .loop-strip {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .loop-arrow {
+      transform: rotate(90deg);
+      padding-bottom: 0;
+    }
+
+    .loop-step {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .invariant {
+      grid-template-columns: 1fr;
+    }
+
+    .invariant-icon {
+      display: none;
+    }
+
+    .compiled-field {
+      grid-template-columns: 1fr;
+      gap: var(--forge-space-1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bottom-nav-card {
+      transition: none;
+    }
+  }
+</style>
