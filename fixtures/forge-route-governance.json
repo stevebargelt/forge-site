@@ -1,0 +1,384 @@
+{
+  "ok": true,
+  "source": "host",
+  "path": "/Users/stevebargelt/.forge/routing-policy.yml",
+  "accountable": "human",
+  "routes": {
+    "strategy": {
+      "classification_hints": [
+        "what should I prioritize",
+        "is this worth building",
+        "what's the LOE"
+      ],
+      "responsible": "orchestrator",
+      "path": "in_session",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "planning": {
+      "classification_hints": [
+        "what should I work on next",
+        "help me triage the backlog"
+      ],
+      "responsible": "orchestrator",
+      "path": "in_session",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "ticketing": {
+      "classification_hints": [
+        "file a backlog item",
+        "move to done",
+        "refresh notes"
+      ],
+      "responsible": "orchestrator",
+      "path": "in_session",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "backlog",
+          "when": "ticketed"
+        }
+      ],
+      "force_rules": []
+    },
+    "implementation_full": {
+      "classification_hints": [
+        "architectural novelty",
+        "unclear boundaries",
+        "missing implementation plan",
+        "new integration shape",
+        "high-risk decomposition"
+      ],
+      "responsible": "feature",
+      "path": "workflow",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "backlog",
+          "when": "ticketed"
+        },
+        {
+          "name": "docs_impact",
+          "when": "operator_behavior_changed"
+        }
+      ],
+      "force_rules": []
+    },
+    "implementation_quick": {
+      "classification_hints": [
+        "bug fix",
+        "small feature",
+        "ui tweak",
+        "targeted refactor",
+        "precedent-based multi-file change",
+        "existing implementation plan",
+        "clear bounded change"
+      ],
+      "responsible": "engineer",
+      "path": "invoke_chain",
+      "consulted": [
+        "affected_code",
+        "existing_tests"
+      ],
+      "required_followups": [
+        "test-engineer"
+      ],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "backlog",
+          "when": "ticketed"
+        },
+        {
+          "name": "docs_impact",
+          "when": "operator_behavior_changed"
+        }
+      ],
+      "force_rules": []
+    },
+    "testing_automation": {
+      "classification_hints": [
+        "write tests",
+        "add e2e coverage",
+        "test backfill",
+        "catch up coverage"
+      ],
+      "responsible": "test-engineer",
+      "path": "invoke",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "testing_exploratory": {
+      "classification_hints": [
+        "exploratory test",
+        "QA the changes",
+        "poke edge cases"
+      ],
+      "responsible": "manual-qa",
+      "path": "invoke",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "documentation_durable": {
+      "classification_hints": [
+        "document how X works",
+        "write a how-to",
+        "update operator docs",
+        "write an ADR"
+      ],
+      "responsible": "documentation-maintainer",
+      "path": "invoke",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "docs_impact",
+          "when": "operator_behavior_changed"
+        }
+      ],
+      "force_rules": []
+    },
+    "documentation_ephemeral": {
+      "classification_hints": [
+        "session notes",
+        "task brief",
+        "scratch draft",
+        "small status note"
+      ],
+      "responsible": "orchestrator",
+      "path": "in_session",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "research": {
+      "classification_hints": [
+        "how does X work",
+        "what does the source say",
+        "investigate this claim"
+      ],
+      "responsible": "research-specialist",
+      "path": "invoke",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "review_wide": {
+      "classification_hints": [
+        "audit this diff",
+        "broad review",
+        "review my plan"
+      ],
+      "responsible": "red-wide",
+      "path": "invoke",
+      "consulted": [
+        "affected_code"
+      ],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "review_narrow": {
+      "classification_hints": [
+        "deep review",
+        "narrow audit",
+        "scrutinize this change"
+      ],
+      "responsible": "red-narrow",
+      "path": "invoke",
+      "consulted": [
+        "affected_code"
+      ],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "review_frontend": {
+      "classification_hints": [
+        "ui review",
+        "accessibility audit",
+        "styles review"
+      ],
+      "responsible": "red-frontend",
+      "path": "invoke",
+      "consulted": [
+        "affected_code"
+      ],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "review_backend": {
+      "classification_hints": [
+        "api review",
+        "data review",
+        "business-logic audit"
+      ],
+      "responsible": "red-backend",
+      "path": "invoke",
+      "consulted": [
+        "affected_code"
+      ],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "review_security": {
+      "classification_hints": [
+        "security audit",
+        "auth review",
+        "crypto review",
+        "secrets review"
+      ],
+      "responsible": "red-security",
+      "path": "invoke",
+      "consulted": [
+        "affected_code"
+      ],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "architecture": {
+      "classification_hints": [
+        "should I use X or Y",
+        "design the boundaries",
+        "what's the right pattern"
+      ],
+      "responsible": "architecture-advisor",
+      "path": "invoke",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "ui_design": {
+      "classification_hints": [
+        "design the UI",
+        "revise the existing design"
+      ],
+      "responsible": "prompt-author",
+      "path": "invoke",
+      "consulted": [
+        "design_artifacts"
+      ],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        },
+        {
+          "name": "handoff_notes",
+          "when": "session_boundary"
+        }
+      ],
+      "force_rules": []
+    },
+    "orientation": {
+      "classification_hints": [
+        "what's the current state",
+        "where were we",
+        "what's in flight"
+      ],
+      "responsible": "orchestrator",
+      "path": "in_session",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    },
+    "meta": {
+      "classification_hints": [
+        "how does forge work",
+        "update the orchestrator template",
+        "add a new agent"
+      ],
+      "responsible": "orchestrator",
+      "path": "in_session",
+      "consulted": [],
+      "required_followups": [],
+      "informed": [
+        {
+          "name": "user_summary"
+        }
+      ],
+      "force_rules": []
+    }
+  }
+}
