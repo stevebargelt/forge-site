@@ -83,7 +83,31 @@ Two compounding infra failures on run-walkthrough-pages-with-diagram-pull-throug
 WORKAROUND this run: orchestrator invoking frontend-specialist directly with the fix list in --task (reaches the agent), and doing real-browser visual verification on the host. Relates to #11.
 
 
+### #14 — docs: reconcile forge-website PRD with docs-strategy reversal + /how-routing-works
+docs/prds/forge-website-platform.md still encodes the OLD 'site explains concepts, links out, NEVER restate CLI/schema' strategy. That was reversed: forge-site now HOSTS forge's docs via an automated forge->forge-site sync (research/forge-docs-pipeline-2026-06-05.md; memory docs-convenience-over-drift-avoidance).
+
+Now concrete because #13 shipped the first consumer: /how-routing-works renders forge's real routing policy from a committed projection (src/data/routes.json) with a forge@<sha> provenance marker. The PRD should reflect: the hosted-docs direction, the export-contract/committed-artifact pattern, the provenance/drift-guard layer (#3/#4), and the new page in the site IA.
+
+Route to documentation-maintainer (durable docs). Deferral target for #13's operator_behavior_changed docs-impact.
+
+
 ## Done (recent)
+
+### #13 — feat: /how-routing-works explainer — first docs-pipeline consumer
+**Closed:** 2026-06-05.
+
+Public Astro page on forge-site explaining how forge's human-authored RACI compiles to an executable routing policy, rendering ~5 curated route cards from REAL forge data (forge route governance --json), not hand-drawn.
+
+Scope (this slice):
+- Architecture consult resolves the export-contract boundary (generator location, routes.json shape, provenance marker).
+- Generator: forge route governance --json -> src/data/routes.json with _generatedFrom: forge@<sha>.
+- Page: RACI-source -> compiled-route compile visual + per-prompt routing-loop strip + curated route cards + governance invariants (accountable:human always; overrides can't weaken force rules). Reuses GateGlyph/RedBadge/StageChip motifs; nav link added.
+- Tests: integration (data contract) + e2e (page render); manual-qa pass (new public page).
+
+This is the FIRST real consumer of the export contract (#9) — gives #9 the 'second consumer' it was deferred for. Ties to drift guards #4 (link-check + 'verified against forge commit' marker) and #3 (schema-validate the transform). Self-demonstrating: forge-site showing forge's own governance, kept current by forge's own pipeline.
+
+Decisions back this: research/forge-docs-pipeline-2026-06-05.md; docs-strategy reversal (site HOSTS forge docs via automated sync).
+
 
 ### #2 — Polished animated workflow diagram (real Forge state data)
 **Closed:** 2026-06-03.
