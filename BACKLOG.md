@@ -29,6 +29,8 @@ Work tracking for the Forge website. Managed via the `forge backlog` CLI.
 - Research doc: `research/forge-docs-pipeline-2026-06-05.md`.
 - Filed this session: **#10** (video capture), **#11** (forge reds-dispatch bug), **#12** (forge rework-no-op + container env gaps).
 
+#12 (container env gap: tsx missing in forge-test wrapper) is being handled on the forge side — user routed it. Do NOT re-file or re-flag as needing handoff. It surfaced again this session on both invokes for #13 (agents fell back to node --test + pnpm test:e2e; orchestrator re-verified on host).
+
 ## Active
 
 ### #3 — Drift guard: schema-validate the run-trace transform
