@@ -34,10 +34,25 @@ const { title, description = 'Forge — AI-native multi-agent orchestration for 
           <li><a href="/what-forge-does" class="nav-link">What Forge does</a></li>
           <li><a href="/how-forge-runs-work" class="nav-link">How it works</a></li>
           <li><a href="/how-routing-works" class="nav-link">Routing</a></li>
+          <li class="nav-guides-item">
+            <button
+              class="nav-link nav-guides-btn"
+              type="button"
+              aria-expanded="false"
+              aria-controls="guides-menu"
+            >
+              Guides
+              <svg class="nav-caret" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" fill="none">
+                <path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <ul id="guides-menu" class="nav-guides-menu" role="list">
+              <li><a href="/add-a-feature" class="nav-guides-link">Add a feature</a></li>
+              <li><a href="/do-research" class="nav-guides-link">Do research</a></li>
+              <li><a href="/kick-off-a-project" class="nav-guides-link">New project</a></li>
+            </ul>
+          </li>
           <li><a href="/docs/" class="nav-link">Docs</a></li>
-          <li><a href="/add-a-feature" class="nav-link">Add a feature</a></li>
-          <li><a href="/do-research" class="nav-link">Do research</a></li>
-          <li><a href="/kick-off-a-project" class="nav-link">New project</a></li>
         </ul>
         <button class="nav-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Toggle navigation" type="button">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -52,10 +67,15 @@ const { title, description = 'Forge — AI-native multi-agent orchestration for 
         <li><a href="/what-forge-does" class="nav-mobile-link">What Forge does</a></li>
         <li><a href="/how-forge-runs-work" class="nav-mobile-link">How it works</a></li>
         <li><a href="/how-routing-works" class="nav-mobile-link">Routing</a></li>
+        <li class="nav-mobile-section">
+          <span class="nav-mobile-section-label">Guides</span>
+          <ul class="nav-mobile-sublist" role="list">
+            <li><a href="/add-a-feature" class="nav-mobile-link nav-mobile-link--sub">Add a feature</a></li>
+            <li><a href="/do-research" class="nav-mobile-link nav-mobile-link--sub">Do research</a></li>
+            <li><a href="/kick-off-a-project" class="nav-mobile-link nav-mobile-link--sub">New project</a></li>
+          </ul>
+        </li>
         <li><a href="/docs/" class="nav-mobile-link">Docs</a></li>
-        <li><a href="/add-a-feature" class="nav-mobile-link">Add a feature</a></li>
-        <li><a href="/do-research" class="nav-mobile-link">Do research</a></li>
-        <li><a href="/kick-off-a-project" class="nav-mobile-link">New project</a></li>
       </ul>
     </nav>
 
@@ -81,6 +101,7 @@ const { title, description = 'Forge — AI-native multi-agent orchestration for 
     </footer>
 
     <script>
+      // Mobile nav toggle
       const toggle = document.querySelector('.nav-toggle');
       const panel = document.getElementById('mobile-nav');
       if (toggle && panel) {
@@ -101,6 +122,82 @@ const { title, description = 'Forge — AI-native multi-agent orchestration for 
             panel.setAttribute('aria-hidden', 'true');
             panel.classList.remove('nav-mobile--open');
             toggle.focus();
+          }
+        });
+      }
+
+      // Guides dropdown
+      const guidesBtn = document.querySelector('.nav-guides-btn');
+      const guidesMenu = document.getElementById('guides-menu');
+
+      if (guidesBtn && guidesMenu) {
+        const guidesItem = guidesBtn.closest('.nav-guides-item');
+
+        function openGuides() {
+          guidesMenu.classList.add('nav-guides-menu--open');
+          guidesBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeGuides(returnFocus) {
+          guidesMenu.classList.remove('nav-guides-menu--open');
+          guidesBtn.setAttribute('aria-expanded', 'false');
+          if (returnFocus) guidesBtn.focus();
+        }
+
+        guidesBtn.addEventListener('click', () => {
+          const isOpen = guidesBtn.getAttribute('aria-expanded') === 'true';
+          if (isOpen) {
+            closeGuides(false);
+          } else {
+            openGuides();
+          }
+        });
+
+        guidesBtn.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            openGuides();
+            const first = guidesMenu.querySelector('a');
+            if (first) first.focus();
+          } else if (e.key === 'Escape' && guidesBtn.getAttribute('aria-expanded') === 'true') {
+            closeGuides(false);
+          }
+        });
+
+        guidesMenu.addEventListener('keydown', (e) => {
+          const links = Array.from(guidesMenu.querySelectorAll('a'));
+          const idx = links.indexOf(document.activeElement);
+          if (e.key === 'Escape') {
+            closeGuides(true);
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const next = links[(idx + 1) % links.length];
+            if (next) next.focus();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (idx <= 0) {
+              closeGuides(true);
+            } else {
+              links[idx - 1].focus();
+            }
+          }
+        });
+
+        // Close on click outside the guides group
+        document.addEventListener('click', (e) => {
+          if (guidesItem && !guidesItem.contains(e.target)) {
+            if (guidesBtn.getAttribute('aria-expanded') === 'true') {
+              closeGuides(false);
+            }
+          }
+        });
+
+        // Close when focus moves outside the guides group
+        document.addEventListener('focusin', (e) => {
+          if (guidesItem && !guidesItem.contains(e.target)) {
+            if (guidesBtn.getAttribute('aria-expanded') === 'true') {
+              closeGuides(false);
+            }
           }
         });
       }
@@ -203,6 +300,87 @@ const { title, description = 'Forge — AI-native multi-agent orchestration for 
     outline-offset: 2px;
   }
 
+  /* ── Guides dropdown ─────────────────────────────────────────────────── */
+
+  .nav-guides-item {
+    position: relative;
+  }
+
+  .nav-guides-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    /* .nav-link handles padding, color, font-size, border-radius */
+  }
+
+  .nav-caret {
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .nav-guides-btn[aria-expanded="true"] .nav-caret {
+    transform: rotate(180deg);
+  }
+
+  /* No-JS: render menu as an inline visible list */
+  .nav-guides-menu {
+    list-style: none;
+    margin: var(--forge-space-1) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+  }
+
+  /* With JS: hidden dropdown positioned absolutely */
+  html.js .nav-guides-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + var(--forge-space-1));
+    left: 0;
+    background: var(--forge-color-surface);
+    border: 1px solid var(--forge-color-border);
+    border-radius: var(--forge-radius-md);
+    padding: var(--forge-space-1);
+    min-width: 160px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    z-index: 200;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+  }
+
+  html.js .nav-guides-menu--open {
+    display: flex;
+  }
+
+  .nav-guides-link {
+    display: block;
+    padding: 6px var(--forge-space-3);
+    color: var(--forge-color-text-muted);
+    text-decoration: none;
+    font-size: var(--forge-font-size-sm);
+    font-weight: 500;
+    border-radius: var(--forge-radius-md);
+    white-space: nowrap;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .nav-guides-link:hover {
+    color: var(--forge-color-text-strong);
+    background-color: var(--forge-color-surface-raised);
+  }
+
+  .nav-guides-link:focus-visible {
+    outline: 2px solid var(--forge-color-accent);
+    outline-offset: 2px;
+  }
+
+  /* ── Nav toggle (hamburger) ──────────────────────────────────────────── */
+
   .nav-toggle {
     display: none;
     align-items: center;
@@ -224,6 +402,8 @@ const { title, description = 'Forge — AI-native multi-agent orchestration for 
     outline: 2px solid var(--forge-color-accent);
     outline-offset: 2px;
   }
+
+  /* ── Mobile nav panel ────────────────────────────────────────────────── */
 
   .nav-mobile {
     display: none;
@@ -263,6 +443,38 @@ const { title, description = 'Forge — AI-native multi-agent orchestration for 
     outline: 2px solid var(--forge-color-accent);
     outline-offset: 2px;
   }
+
+  /* ── Mobile Guides section ───────────────────────────────────────────── */
+
+  .nav-mobile-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-mobile-section-label {
+    display: block;
+    padding: var(--forge-space-2) var(--forge-space-3);
+    color: var(--forge-color-text-muted);
+    font-size: var(--forge-font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .nav-mobile-sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--forge-space-1);
+  }
+
+  .nav-mobile-link--sub {
+    padding-left: var(--forge-space-6);
+  }
+
+  /* ── Footer ──────────────────────────────────────────────────────────── */
 
   main {
     min-height: calc(100svh - 60px - 80px);

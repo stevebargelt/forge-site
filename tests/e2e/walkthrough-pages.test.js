@@ -117,7 +117,7 @@ test.describe('do-research page', () => {
   test('"Go further" section links to CLI reference and add-a-feature', async ({ page }) => {
     await page.goto('/do-research');
     await expect(page.getByText('Go further', { exact: true })).toBeVisible();
-    await expect(page.locator('a[href="/add-a-feature"]').first()).toBeVisible();
+    await expect(page.locator('main a[href="/add-a-feature"]').first()).toBeVisible();
   });
 
   test('reduced-motion: page loads correctly without animation failures', async ({ page }) => {
@@ -169,7 +169,7 @@ test.describe('kick-off-a-project page', () => {
 
   test('"The onboarding arc" section links to add-a-feature', async ({ page }) => {
     await page.goto('/kick-off-a-project');
-    await expect(page.locator('a[href="/add-a-feature"]').first()).toBeVisible();
+    await expect(page.locator('main a[href="/add-a-feature"]').first()).toBeVisible();
   });
 
   test('"Go further" section is present', async ({ page }) => {
@@ -190,20 +190,23 @@ test.describe('kick-off-a-project page', () => {
 // ── Site navigation: new pages linked in header ──────────────────────────
 
 test.describe('site header navigation includes new walkthrough pages', () => {
-  test('header links to /add-a-feature', async ({ page }) => {
+  test('header links to /add-a-feature (via Guides dropdown)', async ({ page }) => {
     await page.goto('/');
+    await page.locator('header').getByRole('button', { name: /guides/i }).click();
     const link = page.locator('header').getByRole('link', { name: /add a feature/i });
     await expect(link).toBeVisible();
   });
 
-  test('header links to /do-research', async ({ page }) => {
+  test('header links to /do-research (via Guides dropdown)', async ({ page }) => {
     await page.goto('/');
+    await page.locator('header').getByRole('button', { name: /guides/i }).click();
     const link = page.locator('header').getByRole('link', { name: /do research/i });
     await expect(link).toBeVisible();
   });
 
-  test('header links to /kick-off-a-project (new project)', async ({ page }) => {
+  test('header links to /kick-off-a-project (via Guides dropdown)', async ({ page }) => {
     await page.goto('/');
+    await page.locator('header').getByRole('button', { name: /guides/i }).click();
     const link = page.locator('header').getByRole('link', { name: /new project/i });
     await expect(link).toBeVisible();
   });
@@ -216,8 +219,9 @@ test.describe('site header navigation includes new walkthrough pages', () => {
     await expect(footer.locator('a[href="/kick-off-a-project"]')).toBeVisible();
   });
 
-  test('clicking "Add a feature" nav link navigates to the page', async ({ page }) => {
+  test('clicking "Add a feature" in Guides dropdown navigates to the page', async ({ page }) => {
     await page.goto('/');
+    await page.locator('header').getByRole('button', { name: /guides/i }).click();
     await page.locator('header').getByRole('link', { name: /add a feature/i }).click();
     await expect(page).toHaveURL(/\/add-a-feature/);
     await expect(page.locator('h1')).toContainText('Add a feature');
