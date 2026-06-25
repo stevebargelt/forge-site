@@ -6,17 +6,17 @@ title: Cross-repo delivery + auto-merge classifier (forge-site CI)
 created: 2026-06-25
 ---
 
-Parent: FW-9 (forge-docs automation pipeline epic). Decomposed out of the original FW-17 "full loop" scope. forge-site-side.
+Parent: FW-9. Decomposed out of the original FW-17 "full loop" scope. forge-site-side. Security-sensitive (auto-merging PRs).
 
-The forge-site CI half of the pipeline: receive the pipeline PR, classify it, and gate merge.
+MDX COMMIT HANDOFF (decided): forge CI opens a JSON-ONLY PR into forge-site (artifacts under src/data/generated/**). forge-site CI, triggered on that PR, runs the renderer (FW-17 for CLI; FW-21 for workflows), COMMITS the rendered MDX to the PR branch, then classifies + gates. The renderer runs forge-site-side only — forge never runs forge-site code (clean producer/consumer boundary). Implementation must handle the bot-committing-to-its-own-PR concerns: avoid CI re-trigger loops (e.g. skip-ci on the render commit or path/actor filters) and use a token with the right PR-write scope.
 
-- Auto-merge classifier (computes the content-only vs structural label; labels NEVER trusted if manually supplied):
-  - eligible only from the expected bot/app identity + target branch
-  - all changed paths within the declared COMMITTED ROOTS (src/data/generated/**, src/content/docs/reference/**, the synced root)
-  - content-only requires: no URL/slug-set delta, no file add/remove in roots, no structural frontmatter-key change, no schema_version change
-  - structural triggers (URL/slug delta incl. command rename, file add/remove, frontmatter key change, schema_version bump, astro.config.mjs change, first-run, any path outside roots) -> human review
-  - classification is by path + URL/slug-set delta + frontmatter keys + schema_version + add/remove — NOT file count
-- CI gates required before auto-merge: build clean + lychee + integration + e2e + CI-computed content-only label.
-- The auto-merge action itself (merge on green + label).
+Auto-merge classifier (labels CI-COMPUTED; never trusted if manually supplied):
+- eligible only from the expected bot/app identity + target branch (the identity forge CI delivers under)
+- all changed paths within COMMITTED ROOTS (src/data/generated/**, src/content/docs/reference/**, the synced root)
+- content-only requires: no URL/slug-set delta, no file add/remove in roots, no structural frontmatter-key change, no schema_version change
+- structural triggers (URL/slug delta incl. command rename, file add/remove, frontmatter key change, schema_version bump, astro.config.mjs change, first-run, any path outside roots) -> human review
+- classification by path + URL/slug-set delta + frontmatter keys + schema_version + add/remove — NOT file count
 
-SECURITY-SENSITIVE (auto-merging PRs) — warrants its own story + review. See docs/prds/forge-website-platform.md (Auto-merge policy, Committed roots).
+Required gates before auto-merge: build clean + lychee (FW-4) + integration + e2e + stale-gen MDX check (FW-20) + CI-computed content-only label. Then auto-merge.
+
+See docs/prds/forge-website-platform.md (Rendering model, Auto-merge policy, Committed roots).
