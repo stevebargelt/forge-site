@@ -2,7 +2,7 @@
 
 **Status:** accepted
 **Captured:** 2026-06-03
-**Revised:** 2026-06-03
+**Revised:** 2026-06-25
 
 ## Objective
 
@@ -13,11 +13,11 @@ Create a polished documentation and presentation surface for Forge that serves t
 
 This should support static docs, interactive diagrams, and high-quality motion explainers showing work progressing through Forge.
 
-## Recommendation
+## Strategy
 
-Build a separate `forge-site` repository for the public/presentation website. The site is public from day one.
+forge-site hosts forge's docs, kept current by an automated forge → forge-site sync pipeline. The original "site links out, never restate CLI/schema, export contract deferred" framing was reversed after an architecture pass confirmed that a hosted, generated reference is tractable and that every third-party docs platform would replace Starlight while still failing to document a commander CLI or YAML workflows.
 
-Keep canonical operator and implementation docs in the Forge repo. The website should curate, explain, and visualize the system, but it should not become the only source of truth for CLI behavior, schemas, workflows, or setup contracts.
+The pattern is already proven in production: `/how-routing-works` renders forge's real routing policy from a committed projection (`src/data/routes.json`) stamped with a `forge@<sha>` provenance marker. The docs pipeline extends that same precedent to the full CLI and workflow reference.
 
 ## Why separate repo
 
@@ -29,29 +29,92 @@ The dashboard was re-merged into the Forge repo because it reads Forge's SQLite 
 - It benefits from a cleaner content workflow and visual design system that should not churn the CLI repo.
 - It should be easy to invite design/copy collaborators without giving them the same working surface as Forge core implementation.
 
-The risk of a separate repo is drift. Mitigate that by keeping technical truth in Forge and making the site consume or link to it where possible — specifically via the forge export contract described below.
+The risk of a separate repo is drift. The pipeline mitigates that by pulling from forge's source of truth on every change: generated content is re-emitted in forge CI and delivered via PR; synced prose is pulled from allowlisted forge docs. The site is coupled to forge's stable operator-visible surface via a versioned export contract, not to its internals.
 
-## Source of truth split
+## Two-layer design
 
-**Forge repo remains canonical for:**
+### Layer 1 — Generation (forge-side)
 
-- CLI command behavior and flags.
-- Workflow YAML and runtime seeds.
-- Model policy and provider resolution docs.
-- Operator setup and upgrade mechanics.
-- Backlog-linked PRDs and architecture decisions.
-- Schema contracts and test-backed implementation details.
+Generation runs in forge's CI, never in forge-site's build. This keeps forge-site's build free of native tooling dependencies and gives generators native access to forge's source tree.
 
-**Website repo owns:**
+| Content | Generator |
+|---|---|
+| CLI reference | Commander introspection (~100–200 lines TS walking commander's public `Help`/`Command` APIs) → structured JSON emitted by forge |
+| Workflow reference | `@adobe/jsonschema2md` run as a forge-site build step against forge's workflow JSON Schema |
+| Concept / how-to prose | Sync of allowlisted `docs/*.md` from forge → MDX passthrough with forge-side frontmatter injection |
 
-- Public narrative and product framing.
-- Presentation-quality explanations.
-- Visual system diagrams.
-- Interactive animations.
-- Videos/GIFs for "how Forge works."
-- Landing page and audience-specific learning paths.
+**Ruled out:** Mintlify, Fern, Speakeasy, Stainless, and similar platforms. They would replace Starlight and still cannot document a commander CLI tree or YAML workflow definitions. Adopting one adds lock-in and cost while solving neither problem.
 
-If a website page and a Forge repo doc disagree, the Forge repo wins. The fix is either to update the site or move the disputed behavior into a provider-neutral Forge primitive/doc.
+### Layer 2 — Delivery
+
+CI-bot + PR via `peter-evans/create-pull-request`. When forge CI runs, generators emit their artifacts and a single updating PR is opened (or force-updated) into forge-site. The PR carries a `content-only` or `structural` label (see [Auto-merge policy](#auto-merge-policy)) that determines whether it merges automatically or awaits human review.
+
+## Export contract
+
+The export contract is the keystone of the pipeline. It is split by content type.
+
+### Generated content → structured JSON
+
+forge emits:
+
+- A **semantic command tree** (CLI reference) as JSON
+- A **workflow manifest** + the **workflow JSON Schema** (used by `@adobe/jsonschema2md` in the forge-site build)
+
+forge-site owns all Starlight rendering from these artifacts. forge must never reference Starlight frontmatter, MDX imports, or Astro IA — that is the consumer's concern, not the producer's.
+
+The JSON carries a top-level `schema_version` field (starting at `1`). Versioning rules:
+
+- New fields are backward-compatible; no version bump required.
+- Removed or renamed fields are **breaking** and require a forge-site renderer update before the PR can merge.
+- forge-site's build **fails** if `schema_version` is absent or unrecognized.
+
+MDX-for-generated was explicitly rejected: it couples forge to Starlight's frontmatter structure, making the boundary lossy and difficult to migrate if the rendering layer ever changes.
+
+### Synced content → MDX passthrough
+
+forge's `docs/*.md` prose syncs to forge-site as MDX with forge-side frontmatter injection: `title` derived from H1, `description` from the first paragraph. No JSON indirection for prose — the markdown is the payload.
+
+Sync is driven by an **explicit allowlist** (not a glob), so forge's plan/design/architecture docs never leak into the public site. Only docs describing shipped, stable behavior qualify. **The allowlist starts empty at first deployment.**
+
+## Content buckets and markers
+
+Three content buckets, each with a distinct provenance convention:
+
+| Bucket | Marker | Contents |
+|---|---|---|
+| **GENERATED** | `_generatedFrom: '<commit-URL>'` + `editUrl: false` | `/docs/reference/cli/*`, `/docs/reference/workflows/*` |
+| **SYNCED** | `_syncedFrom: '<blob-URL>'` + `editUrl: false` | Allowlisted `docs/*.md` prose from forge |
+| **AUTHORED** | *(none — absence of a marker = authored)* | Narrative pages (`how-forge-runs-work`, walkthroughs, `what-forge-does`), cross-cutting concept pages |
+
+**Pre-slice-1 fix (resolved):** `src/content/docs/concepts/campaign-runner.mdx` is an AUTHORED page (no provenance marker). The incorrect `_generatedFrom` marker it previously carried was removed.
+
+## Auto-merge policy
+
+forge-site CI classifies every incoming pipeline PR as content-only or structural and applies the corresponding label:
+
+| Diff type | Treatment | Triggers structural label |
+|---|---|---|
+| Content-only | Auto-merges on green CI (build + lychee + integration + e2e) | — |
+| Structural | Human review required | File added or removed in generated/synced dirs (including command renames, which appear as add + delete), `astro.config.mjs` changes, `schema_version` bumps, first-run PRs, any change outside the generated/synced roots |
+
+Classification is by file-count delta, not byte delta. A PR that only updates existing generated files is content-only even if it changes thousands of lines.
+
+## Drift and provenance layer
+
+Realizes FW-3 and FW-4 concretely:
+
+- **Provenance:** `_generatedFrom` / `_syncedFrom` frontmatter on every non-authored page, pointing to the exact forge commit or blob URL that produced it.
+- **Stale-gen detection:** `git diff --exit-code` on generated dirs in forge CI — if a source change would produce different output than what is committed, the build fails. Generators must be deterministic.
+- **Dead-link check:** `lychee` runs in forge-site CI on every PR. No dead doc-link can ship.
+- **Freshness check (optional):** compare the `_generatedFrom` SHA against forge `HEAD` to surface pages that haven't been regenerated since a forge change.
+
+## FW-15 residual
+
+The pipeline sidesteps the container mount gap for generated and synced content: generation runs forge-side with native source access, so the mount problem never arises for those buckets.
+
+Residual risk is in the **authored** bucket only. Authored pages that reference forge internals (agent types, config fields, runtime behavior) cannot be technically enforced to stay current.
+
+Process control: authored pages referencing forge internals require a human-provided source brief, cited as a comment at the top of the MDX file. This is a convention, not a build gate.
 
 ## Platform choice
 
@@ -145,64 +208,51 @@ Use desktop Claude/ChatGPT as collaborators for:
 
 But the canonical site work should happen in the repo, with normal build/test validation.
 
-## First slice
+## Roadmap
 
-Keep the first website slice deliberately small:
+### Work breakdown
 
-1. Create the `forge-site` repo with Astro (plain Astro landing surface + Starlight docs section).
-2. Add a minimal Forge visual identity: logo, colors, typography, diagram style.
-3. Add one engineer-oriented page: "How Forge runs work."
-4. Add one less-technical page: "What Forge does."
-5. Add one polished animated diagram showing a feature request moving through orchestrator -> architect -> plan -> build -> tests -> reds -> done, driven by real Forge state data.
-6. Deploy to Vercel.
+**FW-9 — Pipeline epic** (re-parents FW-3, FW-4; FW-14 closed — PRD reconciliation done)
 
-Success is not page count. Success is proving the visual language and the maintenance model.
+The overall forge → forge-site docs automation pipeline. Child items:
 
-## Content map
+**FW-16 — Define and version the JSON export contract (schema v1)**
+Specifies the command tree JSON shape, the workflow manifest JSON shape, the `schema_version` field contract, and the forge-site renderer interface. **Blocks all generator work.** No slice starts until this is merged and the schema_version handling is in place in forge-site's build.
 
-Initial site sections:
+**FW-17 — First slice: CLI-reference generator** *(depends on FW-16)*
+Implement the commander introspection generator in forge, wire it into forge CI, emit the command tree JSON, build the forge-site renderer, and connect the full generate → JSON → render → stamp → PR → link-check → auto-merge loop end to end. This slice:
+- Fixes the 2 live `/reference/*` 404s currently linked from `/how-routing-works`.
+- Proves the complete pipeline before investing in subsequent generators.
 
-- **Overview:** what Forge is, why orchestration exists, what problem it solves.
-- **How work moves:** runs, tasks, gates, reds, agents, SQLite blackboard.
-- **Operating Forge:** init, upgrade, auth, provider setup, dashboard, ops check.
-- **Provider model:** Claude, Codex, Bedrock, model policy, provider adapters.
-- **Architecture:** host process, Docker agents, project mounts, read-only reds, notifications.
-- **Demos:** animated workflows and short videos.
-- **Engineer reference:** links back to canonical Forge docs and schemas.
+**FW-3 — Drift guard: schema-validate the run-trace transform**
 
-## Drift controls
+**FW-4 — Drift guard: link check + provenance marker**
 
-To keep the site honest:
+**FW-18 — Authored-page source-brief convention**
+Document the authored-bucket brief convention (source brief as an MDX comment for pages referencing forge internals); also covers writing the bucket marker-convention note. This is a process control, not a build gate.
 
-- Link to canonical Forge docs for technical details instead of duplicating large command references.
-- Generated snippets for command help, schemas, and workflow lists are backed by the forge export contract (see below).
-- Add a lightweight build-time check for links to Forge docs.
-- Keep a clear "last verified against Forge commit" marker for deep architecture pages.
-- When Forge changes operator-visible behavior, docs-impact should include website pages only if they duplicate that behavior rather than merely explain it conceptually.
+Workflow-reference generator (slice 2) and concept-doc sync (slice 3, allowlist starts empty) are future child tickets, to be filed when their turn comes.
 
-## Forge export contract
+**Pre-slice-1 fix (resolved):** `src/content/docs/concepts/campaign-runner.mdx` carried a false `_generatedFrom` marker; removed. The authored-page convention is documented in FW-18.
 
-The site consumes a minimal machine-readable export from Forge at build time:
+### Sequencing
 
-- **Version string** — current Forge release version.
-- **Command help** — structured output from `forge help --json` or equivalent.
-- **Workflow list** — available built-in workflow definitions as JSON.
-
-This export is the backing contract for generated snippets: command reference blocks, workflow lists, and version badges pull from it. The site build fails if the export is absent or malformed, making drift immediately visible rather than silently accumulating.
-
-This resolves the tension between the separate repo (for independence) and drift controls (which need coupling to Forge): the site is coupled to Forge's stable operator-visible surface, not its internals. That is the right boundary.
+1. FW-16: Define JSON contract (schema v1) — blocks everything below
+2. FW-17: CLI-reference generator (first slice; proves the full loop)
+3. Workflow reference generator (future child ticket, to be filed)
+4. Concept-doc sync (future child ticket, to be filed; allowlist starts empty)
 
 ## Open decisions
 
-- Exact repo name: `forge-site`, `forge-docs`, or `forge-www`.
 - Whether Remotion videos render in CI or only on demand.
 
 ## Non-goals for the first slice
 
-- Full command reference.
-- Full migration of existing Forge docs.
-- Dashboard replacement.
-- In-dashboard docs.
+- Full migration of all existing Forge docs in one go.
+- Populating the synced-doc allowlist before the generated reference is proven.
+- Syncing forge's plan, design, or architecture docs to the public site.
+- Adopting a third-party docs platform (Mintlify, Fern, etc.).
+- Dashboard replacement or in-dashboard docs.
 - Every workflow diagram.
 - Custom CMS.
 - Complex analytics.
