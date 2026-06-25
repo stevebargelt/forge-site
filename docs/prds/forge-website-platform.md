@@ -31,50 +31,108 @@ The dashboard was re-merged into the Forge repo because it reads Forge's SQLite 
 
 The risk of a separate repo is drift. The pipeline mitigates that by pulling from forge's source of truth on every change: generated content is re-emitted in forge CI and delivered via PR; synced prose is pulled from allowlisted forge docs. The site is coupled to forge's stable operator-visible surface via a versioned export contract, not to its internals.
 
+## Definitions
+
+These terms are used consistently throughout this document and the pipeline implementation:
+
+**PRODUCER ARTIFACT** — forge emits versioned semantic JSON/schema files with a provenance envelope (`schema_version`, forge commit SHA, `generated_at` timestamp). forge never renders MDX, never references Starlight frontmatter, and never emits Astro IA. The producer boundary ends at JSON/schema output.
+
+**CONSUMER RENDERER** — forge-site validates the PRODUCER ARTIFACTs and renders them into committed MDX. All rendering is forge-site's responsibility: the CLI renderer (forge-site code) converts the command-tree JSON to MDX; `@adobe/jsonschema2md` (forge-site dependency) converts the workflow JSON Schema to MDX. Neither tool runs in forge CI.
+
+**COMMITTED ROOTS** — the exact directory trees eligible for pipeline PR updates and auto-merge. See [Committed roots](#committed-roots) for the definitive list.
+
 ## Two-layer design
 
-### Layer 1 — Generation (forge-side)
+### Layer 1 — Semantic emission (forge-side)
 
-Generation runs in forge's CI, never in forge-site's build. This keeps forge-site's build free of native tooling dependencies and gives generators native access to forge's source tree.
+Forge's CI emits semantic JSON and schema artifacts — it does not render. This keeps forge-site's build free of native tooling dependencies and gives emitters native access to forge's source tree.
 
-| Content | Generator |
+| Content | forge emits |
 |---|---|
-| CLI reference | Commander introspection (~100–200 lines TS walking commander's public `Help`/`Command` APIs) → structured JSON emitted by forge |
-| Workflow reference | `@adobe/jsonschema2md` run as a forge-site build step against forge's workflow JSON Schema |
-| Concept / how-to prose | Sync of allowlisted `docs/*.md` from forge → MDX passthrough with forge-side frontmatter injection |
+| CLI reference | Commander introspection (~100–200 lines TS walking commander's public `Help`/`Command` APIs) → `src/data/generated/cli.schema-v1.json` |
+| Workflow reference | Workflow manifest + workflow JSON Schema → `src/data/generated/workflows.schema-v1.json` (+ the workflow JSON Schema file) |
+| Concept / how-to prose | Allowlisted `docs/*.md` files synced directly; no JSON indirection |
+
+### Layer 2 — Rendering and delivery (forge-site-side)
+
+forge-site's cross-repo PR flow runs the CONSUMER RENDERER after receiving the artifacts:
+
+| Content | forge-site renderer |
+|---|---|
+| CLI reference | CLI renderer (forge-site code) converts `cli.schema-v1.json` → committed MDX under `src/content/docs/reference/cli/*` |
+| Workflow reference | `@adobe/jsonschema2md` (forge-site dependency) converts the workflow JSON Schema → committed MDX under `src/content/docs/reference/workflows/*` |
+| Concept / how-to prose | Synced MDX passthrough with sanitization (see [Synced-prose sanitization](#synced-prose-sanitization)) |
+
+CI-bot + PR via `peter-evans/create-pull-request`. When forge CI runs, emitters produce their artifacts and a single updating PR is opened (or force-updated) into forge-site. The PR carries a `content-only` or `structural` label (see [Auto-merge policy](#auto-merge-policy)) that determines whether it merges automatically or awaits human review.
 
 **Ruled out:** Mintlify, Fern, Speakeasy, Stainless, and similar platforms. They would replace Starlight and still cannot document a commander CLI tree or YAML workflow definitions. Adopting one adds lock-in and cost while solving neither problem.
-
-### Layer 2 — Delivery
-
-CI-bot + PR via `peter-evans/create-pull-request`. When forge CI runs, generators emit their artifacts and a single updating PR is opened (or force-updated) into forge-site. The PR carries a `content-only` or `structural` label (see [Auto-merge policy](#auto-merge-policy)) that determines whether it merges automatically or awaits human review.
 
 ## Export contract
 
 The export contract is the keystone of the pipeline. It is split by content type.
 
-### Generated content → structured JSON
+### Generated content → semantic JSON artifacts
 
-forge emits:
+Forge emits the following artifacts, each carrying a top-level provenance envelope:
 
-- A **semantic command tree** (CLI reference) as JSON
-- A **workflow manifest** + the **workflow JSON Schema** (used by `@adobe/jsonschema2md` in the forge-site build)
+```jsonc
+{
+  "schema_version": 1,
+  "generated_at": "<ISO-8601 timestamp>",
+  "forge_sha": "<forge commit SHA>",
+  // ... artifact-specific content
+}
+```
 
-forge-site owns all Starlight rendering from these artifacts. forge must never reference Starlight frontmatter, MDX imports, or Astro IA — that is the consumer's concern, not the producer's.
+**CLI command tree:** emitted to `src/data/generated/cli.schema-v1.json`. Contains the full command tree as a structured JSON object (see FW-16 acceptance criteria for the required fields).
 
-The JSON carries a top-level `schema_version` field (starting at `1`). Versioning rules:
+**Workflow manifest + JSON Schema:** emitted to `src/data/generated/workflows.schema-v1.json` (manifest) alongside the workflow JSON Schema file.
+
+Versioning rules:
 
 - New fields are backward-compatible; no version bump required.
 - Removed or renamed fields are **breaking** and require a forge-site renderer update before the PR can merge.
 - forge-site's build **fails** if `schema_version` is absent or unrecognized.
 
-MDX-for-generated was explicitly rejected: it couples forge to Starlight's frontmatter structure, making the boundary lossy and difficult to migrate if the rendering layer ever changes.
+**MDX-for-generated was explicitly rejected:** it couples forge to Starlight's frontmatter structure, making the boundary lossy and difficult to migrate if the rendering layer ever changes.
+
+### Rendering model: JSON → MDX (forge-site-side)
+
+forge-site's CONSUMER RENDERER converts the JSON artifacts into committed MDX files:
+
+- `src/data/generated/cli.schema-v1.json` → committed MDX under `src/content/docs/reference/cli/*`
+- Workflow JSON Schema → committed MDX under `src/content/docs/reference/workflows/*`
+
+**Both the JSON source of truth and the rendered MDX are committed.** Rendered MDX carries:
+- `_generatedFrom: '<commit-URL>'` — derived from the provenance envelope's `forge_sha`
+- `editUrl: false` — disables Starlight's "Edit this page" link
+
+This gives Starlight auto-sidebar and pagefind search natively, without runtime generation.
+
+The renderer runs in the cross-repo PR flow as forge-site code, not in forge CI.
+
+#### Standalone pages vs. in-docs reference content
+
+`/how-routing-works` renders `src/data/routes.json` directly in a standalone Astro page, with provenance shown in the UI. This is the pattern for **standalone pages** that live outside the `/docs` content collection.
+
+In-docs reference content uses the JSON → MDX renderer so it integrates with Starlight's `/docs` content collection — giving search, sidebar, breadcrumbs, and inter-doc linking. These two patterns serve different needs and must not be conflated.
 
 ### Synced content → MDX passthrough
 
-forge's `docs/*.md` prose syncs to forge-site as MDX with forge-side frontmatter injection: `title` derived from H1, `description` from the first paragraph. No JSON indirection for prose — the markdown is the payload.
+forge's `docs/*.md` prose syncs to forge-site as MDX with sanitization applied before the PR is opened (see [Synced-prose sanitization](#synced-prose-sanitization)).
 
 Sync is driven by an **explicit allowlist** (not a glob), so forge's plan/design/architecture docs never leak into the public site. Only docs describing shipped, stable behavior qualify. **The allowlist starts empty at first deployment.**
+
+## Committed roots
+
+These are the exact directory trees eligible for pipeline PR updates and auto-merge. Auto-merge classification, provenance markers, and link-check scoping all depend on this list.
+
+| Root | Type | Contents |
+|---|---|---|
+| `src/data/generated/**` | GENERATED (producer JSON) | CLI command-tree JSON, workflow manifest and JSON Schema emitted by forge CI |
+| `src/content/docs/reference/**` | GENERATED (rendered MDX) | MDX rendered from the JSON artifacts; `_generatedFrom` + `editUrl: false` on every file |
+| `src/content/docs/guides/**` | SYNCED | Allowlisted `docs/*.md` prose synced from forge; `_syncedFrom` + `editUrl: false` |
+| Everything else under `src/content/docs/**` and `src/pages/**` | AUTHORED | Narrative pages, walkthroughs, concept pages; no provenance marker |
 
 ## Content buckets and markers
 
@@ -82,29 +140,58 @@ Three content buckets, each with a distinct provenance convention:
 
 | Bucket | Marker | Contents |
 |---|---|---|
-| **GENERATED** | `_generatedFrom: '<commit-URL>'` + `editUrl: false` | `/docs/reference/cli/*`, `/docs/reference/workflows/*` |
-| **SYNCED** | `_syncedFrom: '<blob-URL>'` + `editUrl: false` | Allowlisted `docs/*.md` prose from forge |
+| **GENERATED** | `_generatedFrom: '<commit-URL>'` + `editUrl: false` | `src/content/docs/reference/cli/*`, `src/content/docs/reference/workflows/*` |
+| **SYNCED** | `_syncedFrom: '<blob-URL>'` + `editUrl: false` | Allowlisted `docs/*.md` prose from forge, synced to `src/content/docs/guides/**` |
 | **AUTHORED** | *(none — absence of a marker = authored)* | Narrative pages (`how-forge-runs-work`, walkthroughs, `what-forge-does`), cross-cutting concept pages |
 
 **Pre-slice-1 fix (resolved):** `src/content/docs/concepts/campaign-runner.mdx` is an AUTHORED page (no provenance marker). The incorrect `_generatedFrom` marker it previously carried was removed.
 
+## Synced-prose sanitization
+
+Before opening a PR for synced content, the sync step sanitizes each file. Sanitization is fail-loud: the sync fails rather than shipping broken or unsafe content.
+
+| Input condition | Sanitization action |
+|---|---|
+| Existing frontmatter | Stripped and replaced with injected `title` (derived from H1) + `description` (from first paragraph) + `_syncedFrom` |
+| Relative links | Rewritten to absolute site paths or absolute forge URLs |
+| Images / static assets | Copied into forge-site's asset tree and URLs rewritten; file is rejected if copying fails |
+| MDX imports / component usage | Disallowed — treated as untrusted; presence of any import or component fails the sync |
+| Private / internal links | Detected; sync fails or link is stripped (behavior configurable per link pattern in the allowlist) |
+| Duplicate H1 or title mismatch | Title derived from H1; duplicate H1 dropped from body |
+
 ## Auto-merge policy
 
-forge-site CI classifies every incoming pipeline PR as content-only or structural and applies the corresponding label:
+forge-site CI classifies every incoming pipeline PR and applies the corresponding label. Labels are **computed by forge-site CI**; manually supplied labels are never trusted for merge eligibility.
 
-| Diff type | Treatment | Triggers structural label |
-|---|---|---|
-| Content-only | Auto-merges on green CI (build + lychee + integration + e2e) | — |
-| Structural | Human review required | File added or removed in generated/synced dirs (including command renames, which appear as add + delete), `astro.config.mjs` changes, `schema_version` bumps, first-run PRs, any change outside the generated/synced roots |
+A pipeline PR is **auto-merge-eligible** only if ALL of the following hold:
 
-Classification is by file-count delta, not byte delta. A PR that only updates existing generated files is content-only even if it changes thousands of lines.
+1. It originates from the expected bot/app identity and targets the expected branch.
+2. Its `content-only` label was computed by forge-site CI (not manually applied).
+3. All changed paths are within the declared COMMITTED ROOTS.
+4. It is content-only: no URL/slug-set delta, no file add or remove within the roots, no structural frontmatter key change, no `schema_version` change.
+
+**Classification is by path restriction + URL/slug-set delta + frontmatter keys + `schema_version` + add/remove — not by file count.** A manifest change that renames a command route changes the URL/slug set without adding or removing files — that is STRUCTURAL and requires human review even if the file count is unchanged.
+
+Anything else is STRUCTURAL → human review required:
+
+| Trigger | Treatment |
+|---|---|
+| URL/slug-set delta (route rename, new or removed command) | Structural — human review |
+| File added or removed in committed roots | Structural — human review |
+| Frontmatter structural-key change | Structural — human review |
+| `schema_version` bump | Structural — human review |
+| `astro.config.mjs` changes | Structural — human review |
+| First-run PR | Structural — human review |
+| Any path outside the committed roots | Structural — human review |
 
 ## Drift and provenance layer
 
 Realizes FW-3 and FW-4 concretely:
 
 - **Provenance:** `_generatedFrom` / `_syncedFrom` frontmatter on every non-authored page, pointing to the exact forge commit or blob URL that produced it.
-- **Stale-gen detection:** `git diff --exit-code` on generated dirs in forge CI — if a source change would produce different output than what is committed, the build fails. Generators must be deterministic.
+- **Stale-gen detection:**
+  - forge CI runs `git diff --exit-code` on the emitted JSON artifacts (`src/data/generated/**`) — if a forge source change would produce different JSON than what is committed, forge CI fails. Emitters must be deterministic.
+  - forge-site CI runs `git diff --exit-code` on the rendered MDX (`src/content/docs/reference/**`) — if re-running the renderer over the committed JSON would produce different MDX than what is committed, forge-site CI fails. The renderer must be deterministic.
 - **Dead-link check:** `lychee` runs in forge-site CI on every PR. No dead doc-link can ship.
 - **Freshness check (optional):** compare the `_generatedFrom` SHA against forge `HEAD` to surface pages that haven't been regenerated since a forge change.
 
@@ -114,7 +201,7 @@ The pipeline sidesteps the container mount gap for generated and synced content:
 
 Residual risk is in the **authored** bucket only. Authored pages that reference forge internals (agent types, config fields, runtime behavior) cannot be technically enforced to stay current.
 
-Process control: authored pages referencing forge internals require a human-provided source brief, cited as a comment at the top of the MDX file. This is a convention, not a build gate.
+Process control: authored pages referencing forge internals require a human-provided source brief, cited as a comment at the top of the MDX file. This is a convention, not a build gate. A review checklist for applying this convention is maintained in `CLAUDE.md`/`CONTRIBUTING` (authored by FW-18) and applied at PR review.
 
 ## Platform choice
 
@@ -158,7 +245,7 @@ Official reference:
 
 ### On-page interactive motion
 
-Use **Framer Motion** or **GSAP over SVG** for interactive animations embedded in site pages.
+Use **GSAP over SVG** for interactive animations embedded in site pages. Framer Motion will be added only if React islands become necessary for interactive animations.
 
 Best for:
 
@@ -167,7 +254,7 @@ Best for:
 - The orchestrator consuming `forge ops check --json`.
 - Provider/profile routing across Claude, Codex, and future providers.
 
-This approach keeps animation code in the repo, so agents can build, test, and maintain it. It also shares the React component tree with Remotion video scenes, reducing duplication across the motion stack.
+This approach keeps animation code in the repo, so agents can build, test, and maintain it.
 
 ### Exportable videos
 
@@ -180,7 +267,7 @@ Best for:
 - Release videos.
 - Animated walkthroughs that need MP4/WebM export.
 
-Remotion keeps videos code-owned and reusable. A component used in a website animation can often be reused in a video scene.
+Remotion keeps videos code-owned and reusable.
 
 Official reference:
 
@@ -219,6 +306,24 @@ The overall forge → forge-site docs automation pipeline. Child items:
 **FW-16 — Define and version the JSON export contract (schema v1)**
 Specifies the command tree JSON shape, the workflow manifest JSON shape, the `schema_version` field contract, and the forge-site renderer interface. **Blocks all generator work.** No slice starts until this is merged and the schema_version handling is in place in forge-site's build.
 
+Acceptance criteria for `cli.schema-v1.json` — the schema must carry, for each command node:
+
+- `id` / `slug` — stable identifier used as the URL slug; must not change without a `schema_version` bump
+- `name` / `path` — display name and full command path (e.g. `forge ops check`)
+- `summary` — one-line description used in command listings
+- `description` — full description used on the command's detail page
+- `aliases` — list of accepted alternative names
+- `arguments` — positional args, each with: `name`, `description`, `required`, `variadic`
+- `options` — flags/options, each with: `name`, `aliases`, `description`, `type`, `default`, `required`, `variadic`, `repeatable`
+- `inherited_options` — global/inherited options carried by this command (may reference a shared definition)
+- `examples` — list of `{ description, command }` pairs
+- `hidden` — boolean; hidden commands are excluded from rendered docs
+- `deprecated` — boolean or deprecation-message string; rendered with a deprecation callout
+- `ordering` — explicit ordering rules for arguments and options in rendered output
+- Provenance envelope at root: `schema_version`, `forge_sha`, `generated_at`
+
+forge-site's build must fail if `schema_version` is absent, unrecognized, or if any required field is missing from a non-hidden command node. Schema validation runs before rendering begins.
+
 **FW-17 — First slice: CLI-reference generator** *(depends on FW-16)*
 Implement the commander introspection generator in forge, wire it into forge CI, emit the command tree JSON, build the forge-site renderer, and connect the full generate → JSON → render → stamp → PR → link-check → auto-merge loop end to end. This slice:
 - Fixes the 2 live `/reference/*` 404s currently linked from `/how-routing-works`.
@@ -229,7 +334,7 @@ Implement the commander introspection generator in forge, wire it into forge CI,
 **FW-4 — Drift guard: link check + provenance marker**
 
 **FW-18 — Authored-page source-brief convention**
-Document the authored-bucket brief convention (source brief as an MDX comment for pages referencing forge internals); also covers writing the bucket marker-convention note. This is a process control, not a build gate.
+Document the authored-bucket brief convention (source brief as an MDX comment for pages referencing forge internals); also covers writing the bucket marker-convention note and the review checklist in `CLAUDE.md`/`CONTRIBUTING`. This is a process control, not a build gate.
 
 Workflow-reference generator (slice 2) and concept-doc sync (slice 3, allowlist starts empty) are future child tickets, to be filed when their turn comes.
 
@@ -256,3 +361,4 @@ Workflow-reference generator (slice 2) and concept-doc sync (slice 3, allowlist 
 - Every workflow diagram.
 - Custom CMS.
 - Complex analytics.
+- Remotion video production — not needed for FW-16 or FW-17; the motion stack for these slices is GSAP on-page animations only.
