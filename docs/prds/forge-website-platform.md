@@ -166,9 +166,10 @@ forge-site CI classifies every incoming pipeline PR and applies the correspondin
 A pipeline PR is **auto-merge-eligible** only if ALL of the following hold:
 
 1. It originates from the expected bot/app identity and targets the expected branch.
-2. Its `content-only` label was computed by forge-site CI (not manually applied).
-3. All changed paths are within the declared COMMITTED ROOTS.
-4. It is content-only: no URL/slug-set delta, no file add or remove within the roots, no structural frontmatter key change, no `schema_version` change.
+2. The render job has **converged**: the latest forge-site CI run on the rendered branch reports no render diff — re-running the renderer over the committed JSON produces no further changes (FW-19 post-render gated run must pass with zero diff before auto-merge proceeds).
+3. Its `content-only` label was computed by forge-site CI (not manually applied).
+4. All changed paths are within the declared COMMITTED ROOTS.
+5. It is content-only: no URL/slug-set delta, no file add or remove within the roots, no structural frontmatter key change, no `schema_version` change.
 
 **Classification is by path restriction + URL/slug-set delta + frontmatter keys + `schema_version` + add/remove — not by file count.** A manifest change that renames a command route changes the URL/slug set without adding or removing files — that is STRUCTURAL and requires human review even if the file count is unchanged.
 
@@ -335,7 +336,7 @@ forge-site's build must fail if `schema_version` is absent, unrecognized, or if 
 
 **FW-3 — Drift guard: schema-validate the run-trace transform.**
 
-**FW-4 — Drift guard: lychee link-check + provenance marker.**
+**FW-4 — Drift guard: lychee dead-link check.**
 
 **FW-18 — Authored-page source-brief convention + review checklist.**
 

@@ -2,7 +2,7 @@
 id: FW-4
 type: story
 status: active
-title: "Drift guard: build-time canonical-doc link check + 'verified against forge commit' marker"
+title: "Drift guard: lychee dead-link check"
 ---
 
 Narrowed (per review): provenance is now handled by the generated/synced renderers (_generatedFrom/_syncedFrom), rendered-MDX determinism by FW-20, and CI gate orchestration + auto-merge by FW-19. What remains uniquely here:
