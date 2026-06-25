@@ -1,0 +1,103 @@
+---
+title: Campaign Runner
+description: Run an ordered set of Forge tickets under a single execution policy, with plan approval, state tracking, and blocker-aware continuation.
+editUrl: false
+---
+
+{/* Source: forge docs/campaign-runner-plan.md at forge@d8a8aa3 — hand-authored 2026-06-25, provisional. */}
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Under active development">
+This feature is under active development. Only Phase 0 (Backlog Integrity Prerequisites) has shipped; Phases 1–5 are planned but not yet available. See [Shipped vs. planned](#shipped-vs-planned) before relying on any behavior described here.
+</Aside>
+
+A **campaign** is a named, ordered batch of Forge runs executed against a defined set of tickets under a single execution policy. Where running tickets individually is ad hoc and uncoordinated, a campaign makes a batch of work into a first-class observable unit with defined start, pause, resume, and completion semantics.
+
+## Inputs
+
+A campaign ticket set is specified in one of two ways:
+
+**Explicit ordered ticket list** — you enumerate the exact tickets to run and the order in which to run them. The list is fixed at plan time and does not change unless you re-plan.
+
+**Epic child expansion** — you name a single epic; the runner expands it to its child tickets at plan time and orders them according to the epic's child ordering.
+
+Either strategy produces a deterministic ordered list of tickets that becomes the campaign's execution plan.
+
+## Plan, approval, and stale-start rejection
+
+Before any runs execute, the Campaign Runner builds a **plan**: the ordered list of tickets it intends to run, together with the execution mode and policy.
+
+The plan is fingerprinted into a **plan_hash**. A human reviews and **approves** the plan. The plan_hash is recorded alongside the approval.
+
+When a campaign start is issued, the runner recomputes the hash of the current ticket set. If the hash no longer matches the approved plan_hash — because tickets were added, removed, reordered, or modified since approval — the start is **rejected as stale**. The operator must re-plan and re-approve before the campaign can proceed.
+
+This prevents silently executing a different batch than the one the operator reviewed.
+
+## State model
+
+### Campaign status
+
+| Status | Meaning |
+|--------|---------|
+| `planned` | Plan approved; not yet started |
+| `running` | Actively executing items |
+| `paused` | Execution suspended (by operator or blocker) |
+| `complete` | All items resolved; campaign finished |
+| `failed` | Campaign halted due to an unrecoverable error |
+| `abandoned` | Operator manually stopped the campaign |
+
+### Campaign item fields
+
+Each item in a campaign carries the following fields:
+
+| Field | Purpose | Allowed values |
+|-------|---------|----------------|
+| `outcome` | The result of the item's run | `shipped`, `blocked`, `skipped`, `held`, `needs_refinement`, `failed` |
+| `blocker_kind` | If the item was blocked: the category of blocker encountered | `scope`, `readiness`, `tests`, `merge_conflict`, `auth`, `dependency`, `git_state`, `infrastructure`, `campaign_system`, `human_decision` |
+| `continue_policy` | The policy in effect for this item — whether execution may continue past a blocker | `continue_allowed`, `hold_dependents`, `hold_campaign` |
+| `reason` | Human-readable description of the item's outcome or blocker | Free text |
+| `human_action_requested` | The requested operator action before the campaign can proceed past this item | The requested operator action |
+
+## Execution modes
+
+| Mode | Behavior |
+|------|---------|
+| `dry_run` | Plan and report only |
+| `pilot` | Conservative execution with visible warnings when quality gates are incomplete |
+| `sequential` | Production-worthy one-item-at-a-time execution |
+| `parallel` | Future mode after worktree, dependency, and merge/refinery gates are proven |
+
+## Blocker and continue semantics
+
+When a campaign item encounters a blocker, the runner evaluates whether to continue to the next item or halt.
+
+The runner **continues** only when either condition holds:
+
+- The blocker is **local** — scoped to that individual item and not indicative of a systemic problem affecting remaining items.
+- The execution **mode allows continuation** past blockers.
+
+When neither condition is met, the campaign pauses (or fails) and the affected item's `human_action_requested` field is set, signaling that operator intervention is required before the campaign can proceed.
+
+## Campaign report
+
+At the end of a campaign — or on demand during execution — the runner produces a campaign report in two forms:
+
+**Human report** — a readable prose summary covering what ran, what succeeded, what was blocked, and any items requiring human action.
+
+**JSON report** — a structured, machine-readable record of all campaign items and their outcomes, suitable for downstream tooling, auditing, or dashboards.
+
+## Shipped vs. planned
+
+Campaign Runner is being delivered in phases. **Only Phase 0 is complete.** Phases 1 through 5 are planned but have not yet shipped.
+
+| Phase | Status |
+|-------|--------|
+| Phase 0 — Backlog Integrity Prerequisites | **Shipped** |
+| Phase 1 | Not yet shipped |
+| Phase 2 | Not yet shipped |
+| Phase 3 | Not yet shipped |
+| Phase 4 | Not yet shipped |
+| Phase 5 | Not yet shipped |
+
+Behaviors described in this document reflect the full intended design as captured in `campaign-runner-plan.md` at `forge@d8a8aa3`. Verify against the forge changelog before relying on any Phase 1+ capability.

@@ -15,6 +15,12 @@ export default defineConfig({
             { label: 'Introduction', link: '/docs/' },
           ],
         },
+        {
+          label: 'Concepts',
+          items: [
+            { label: 'Campaign Runner', link: '/docs/concepts/campaign-runner/' },
+          ],
+        },
       ],
     }),
   ],
