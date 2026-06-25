@@ -301,10 +301,9 @@ But the canonical site work should happen in the repo, with normal build/test va
 
 **FW-9 — Pipeline epic** (re-parents FW-3, FW-4; FW-14 closed — PRD reconciliation done)
 
-The overall forge → forge-site docs automation pipeline. Child items:
+The overall forge → forge-site docs automation pipeline. Child items (forge-site stories):
 
-**FW-16 — Define and version the JSON export contract (schema v1)**
-Specifies the command tree JSON shape, the workflow manifest JSON shape, the `schema_version` field contract, and the forge-site renderer interface. **Blocks all generator work.** No slice starts until this is merged and the schema_version handling is in place in forge-site's build.
+**FW-16 — Export contract spec (schema v1) + forge-site build validation.** BLOCKS the slices. (The EMITTER that produces conforming JSON is forge-SIDE — see forge-side work list.)
 
 Acceptance criteria for `cli.schema-v1.json` — the schema must carry, for each command node:
 
@@ -324,28 +323,34 @@ Acceptance criteria for `cli.schema-v1.json` — the schema must carry, for each
 
 forge-site's build must fail if `schema_version` is absent, unrecognized, or if any required field is missing from a non-hidden command node. Schema validation runs before rendering begins.
 
-**FW-17 — First slice: CLI-reference generator** *(depends on FW-16)*
-Implement the commander introspection generator in forge, wire it into forge CI, emit the command tree JSON, build the forge-site renderer, and connect the full generate → JSON → render → stamp → PR → link-check → auto-merge loop end to end. This slice:
-- Fixes the 2 live `/reference/*` 404s currently linked from `/how-routing-works`.
-- Proves the complete pipeline before investing in subsequent generators.
+**FW-17 — CLI reference RENDERER (forge-site):** `cli.schema-v1.json` → committed MDX under `src/content/docs/reference/cli/*`, `_generatedFrom` + `editUrl:false`. *(Narrowed from the original 'full loop' scope — emitter is forge-side; delivery+auto-merge is FW-19.)*
 
-**FW-3 — Drift guard: schema-validate the run-trace transform**
+**FW-19 — Cross-repo delivery + auto-merge classifier (forge-site CI):** receive the pipeline PR, compute the content-only/structural label (CI-computed, bot-identity-gated, path/slug-delta based), run CI gates, auto-merge on green content-only. Security-sensitive.
 
-**FW-4 — Drift guard: link check + provenance marker**
+**FW-20 — Stale-gen determinism check on rendered MDX (forge-site CI git diff).** Pairs with the forge-side JSON-side check.
 
-**FW-18 — Authored-page source-brief convention**
-Document the authored-bucket brief convention (source brief as an MDX comment for pages referencing forge internals); also covers writing the bucket marker-convention note and the review checklist in `CLAUDE.md`/`CONTRIBUTING`. This is a process control, not a build gate.
+**FW-21 — Workflow reference renderer (forge-site, @adobe/jsonschema2md).** Slice 2.
 
-Workflow-reference generator (slice 2) and concept-doc sync (slice 3, allowlist starts empty) are future child tickets, to be filed when their turn comes.
+**FW-22 — Synced concept-docs: sanitization contract + allowlist (starts empty) + Starlight integration (forge-site).** Slice 3.
+
+**FW-3 — Drift guard: schema-validate the run-trace transform.**
+
+**FW-4 — Drift guard: lychee link-check + provenance marker.**
+
+**FW-18 — Authored-page source-brief convention + review checklist.**
 
 **Pre-slice-1 fix (resolved):** `src/content/docs/concepts/campaign-runner.mdx` carried a false `_generatedFrom` marker; removed. The authored-page convention is documented in FW-18.
 
+### Forge-side work
+
+The producer-side deliverables (CLI + workflow JSON emitters, forge-CI stale-gen JSON check, cross-repo PR delivery, synced-prose sync+sanitizer, contract conformance) live in the FORGE repo and are enumerated for the forge orchestrator in `research/forge-side-pipeline-work.md`.
+
 ### Sequencing
 
-1. FW-16: Define JSON contract (schema v1) — blocks everything below
-2. FW-17: CLI-reference generator (first slice; proves the full loop)
-3. Workflow reference generator (future child ticket, to be filed)
-4. Concept-doc sync (future child ticket, to be filed; allowlist starts empty)
+1. FW-16 + forge-side CLI emitter (contract + producer)
+2. CLI slice end-to-end: FW-17 (render) + FW-19 (deliver/auto-merge) + FW-20 (MDX drift). FW-3/FW-4 land alongside this slice.
+3. FW-21: workflow reference renderer (slice 2)
+4. FW-22: synced concept-docs (slice 3)
 
 ## Open decisions
 
