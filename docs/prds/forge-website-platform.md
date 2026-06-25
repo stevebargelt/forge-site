@@ -63,7 +63,7 @@ forge-site's cross-repo PR flow runs the CONSUMER RENDERER after receiving the a
 | Workflow reference | `@adobe/jsonschema2md` (forge-site dependency) converts the workflow JSON Schema → committed MDX under `src/content/docs/reference/workflows/*` |
 | Concept / how-to prose | Synced MDX passthrough with sanitization (see [Synced-prose sanitization](#synced-prose-sanitization)) |
 
-CI-bot + PR via `peter-evans/create-pull-request`. When forge CI runs, emitters produce their artifacts and a single updating PR is opened (or force-updated) into forge-site. The PR carries a `content-only` or `structural` label (see [Auto-merge policy](#auto-merge-policy)) that determines whether it merges automatically or awaits human review.
+CI-bot + PR via `peter-evans/create-pull-request`. When forge CI runs, emitters produce their artifacts and a single updating PR is opened (or force-updated) into forge-site. After render convergence, forge-site CI computes and applies a `content-only` or `structural` label to the PR — labels are CI-computed and never trusted from the incoming PR (see [Auto-merge policy](#auto-merge-policy)). That label determines whether the PR merges automatically or awaits human review.
 
 **Ruled out:** Mintlify, Fern, Speakeasy, Stainless, and similar platforms. They would replace Starlight and still cannot document a commander CLI tree or YAML workflow definitions. Adopting one adds lock-in and cost while solving neither problem.
 
