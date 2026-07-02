@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://forge.dev/schemas/workflows.schema-v1.schema.json",
+  "title": "workflows.schema-v1",
+  "description": "Meta-schema for src/data/generated/workflows.schema-v1.json — the forge workflow-manifest export contract (FW-16). This manifest is identity/metadata only, one entry per workflow, in rendering order. FW-21's renderer derives its page set from this array (manifest-driven, not hand-listed) and pulls each workflow's field-level structure from the accompanying workflow JSON Schema file via schema_ref — that JSON Schema file is standard jsonschema2md input and is not itself modeled here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "forge_sha", "generated_at", "workflows"],
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "description": "Contract version. New fields are additive/backward-compatible; removed or renamed fields require a new schema_version and a forge-site renderer update before merge."
+    },
+    "forge_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{7,40}$",
+      "description": "forge commit SHA the export was generated from."
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}",
+      "description": "ISO-8601 timestamp of generation."
+    },
+    "workflows": {
+      "type": "array",
+      "description": "Flat list of every workflow manifest entry, in rendering order.",
+      "items": { "$ref": "#/definitions/workflow" }
+    }
+  },
+  "definitions": {
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "path", "hidden"],
+      "description": "A hidden workflow only needs id/name/path/hidden populated. A non-hidden workflow must carry every field below (build fails otherwise), matching the CLI command node's hidden-exemption shape for consistency.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[-.][a-z0-9]+)*$",
+          "description": "Stable identifier used as the URL slug. Renaming this without a schema_version bump is a breaking change."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1, "description": "Workflow file path or fully-qualified workflow name." },
+        "summary": { "type": "string" },
+        "description": { "type": "string" },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Grouping label used to cluster workflows in rendered docs navigation."
+        },
+        "schema_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pointer into the accompanying workflow JSON Schema file (e.g. a JSON Pointer like '#/definitions/deploy-workflow') identifying this workflow's field-level schema, for FW-21's jsonschema2md renderer."
+        },
+        "hidden": { "type": "boolean", "description": "Hidden workflows are excluded from rendered docs." },
+        "deprecated": {
+          "type": ["boolean", "string"],
+          "description": "false/absent-equivalent when not deprecated; a string carries the deprecation message rendered as a callout."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "required": ["hidden"],
+              "properties": { "hidden": { "const": true } }
+            }
+          },
+          "then": {
+            "required": ["id", "name", "path", "summary", "description", "category", "schema_ref", "hidden", "deprecated"]
+          }
+        }
+      ]
+    }
+  }
+}

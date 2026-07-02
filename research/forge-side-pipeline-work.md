@@ -22,6 +22,8 @@ Root provenance envelope: `schema_version: 1`, `forge_sha`, `generated_at`.
 
 Emit `workflows.schema-v1.json` (manifest: name/description/path/category per workflow) **plus** the workflow YAML JSON Schema (doubles as editor validation via `$schema`). Same provenance envelope; deterministic. Consumed by forge-site FW-21 (`@adobe/jsonschema2md`).
 
+> **Manifest fields — must match FW-16 schema v1, not just this line.** The four fields above are the human-facing *content* fields; the **full** per-entry contract is defined by forge-site's `src/schemas/workflows.schema-v1.schema.json`. A non-hidden workflow entry MUST carry `id`, `name`, `path`, `summary`, `description`, `category`, `schema_ref`, `hidden`, `deprecated` (a hidden entry needs only `id`/`name`/`path`/`hidden`; `additionalProperties: false` rejects anything else). Emitting only the abbreviated four would hard-fail forge-site's prebuild validation gate. Per P6, conform to the meta-schema, not this shorthand.
+
 ## P3. forge CI — stale-gen determinism on emitted JSON
 
 `git diff --exit-code` on the emitted JSON after re-emit in forge CI; **fail** if a forge source change would produce different JSON than what was delivered. Pairs with forge-site FW-20 (same check on rendered MDX). Emitters must be deterministic.

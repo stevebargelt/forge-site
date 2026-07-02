@@ -4,10 +4,12 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/validate-schema-export.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --test tests/integration/source-integrity.test.js tests/integration/component-integrity.test.js tests/integration/routes-schema.test.js tests/integration/routes-data-contract.test.js tests/integration/routes-projection.test.js tests/integration/build-output.test.js",
+    "validate:exports": "node scripts/validate-schema-export.mjs",
+    "test": "node --test tests/integration/source-integrity.test.js tests/integration/component-integrity.test.js tests/integration/routes-schema.test.js tests/integration/routes-data-contract.test.js tests/integration/routes-projection.test.js tests/integration/schema-export-contract.test.js tests/integration/build-output.test.js",
     "test:e2e": "pnpm build && npx playwright test"
   },
   "dependencies": {
@@ -18,6 +20,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
+    "ajv": "^8.20.0",
     "typescript": "^5.7.0"
   },
   "engines": {
