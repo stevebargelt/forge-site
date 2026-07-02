@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "forge_sha": "bbb1c136b5723e63d653a05d100f00b3d1a40fc8",
+  "generated_at": "2026-06-25T09:00:00Z",
+  "global_options": [
+    {
+      "name": "--verbose",
+      "aliases": ["-v"],
+      "description": "Print debug-level logging.",
+      "type": "boolean",
+      "default": false,
+      "required": false,
+      "variadic": false,
+      "repeatable": false
+    },
+    {
+      "name": "--json",
+      "aliases": [],
+      "description": "Emit machine-readable JSON output instead of human-readable text.",
+      "type": "boolean",
+      "default": false,
+      "required": false,
+      "variadic": false,
+      "repeatable": false
+    }
+  ],
+  "commands": [
+    {
+      "id": "backlog",
+      "name": "backlog",
+      "path": "forge backlog",
+      "summary": "Manage the structured backlog.",
+      "description": "Parent command for listing, filing, and moving backlog tickets.",
+      "aliases": [],
+      "arguments": [],
+      "options": [],
+      "inherited_options": ["--verbose", "--json"],
+      "examples": [
+        { "description": "List active tickets", "command": "forge backlog list --status active" }
+      ],
+      "hidden": false,
+      "deprecated": false,
+      "ordering": { "arguments": "declaration", "options": "declaration" }
+    },
+    {
+      "id": "backlog-list",
+      "name": "list",
+      "path": "forge backlog list",
+      "summary": "List backlog tickets.",
+      "description": "Lists backlog tickets, optionally filtered by status.",
+      "aliases": ["ls"],
+      "arguments": [],
+      "options": [
+        {
+          "name": "--status",
+          "aliases": ["-s"],
+          "description": "Filter by ticket status.",
+          "type": "string",
+          "default": "active",
+          "required": false,
+          "variadic": false,
+          "repeatable": false
+        }
+      ],
+      "inherited_options": ["--verbose", "--json"],
+      "examples": [
+        { "description": "List closed tickets", "command": "forge backlog list --status closed" }
+      ],
+      "hidden": false,
+      "deprecated": false,
+      "ordering": { "arguments": "declaration", "options": "declaration" }
+    },
+    {
+      "id": "backlog-file",
+      "name": "file",
+      "path": "forge backlog file",
+      "summary": "File a new backlog ticket.",
+      "description": "Creates a new backlog ticket of the given type with the given title.",
+      "aliases": [],
+      "arguments": [
+        { "name": "title", "description": "The ticket title.", "required": true, "variadic": false }
+      ],
+      "options": [
+        {
+          "name": "--type",
+          "aliases": ["-t"],
+          "description": "Ticket type (story, bug, epic).",
+          "type": "string",
+          "default": "story",
+          "required": false,
+          "variadic": false,
+          "repeatable": false
+        }
+      ],
+      "inherited_options": ["--verbose"],
+      "examples": [
+        { "description": "File a bug", "command": "forge backlog file \"Fix flaky test\" --type bug" }
+      ],
+      "hidden": false,
+      "deprecated": false,
+      "ordering": { "arguments": "declaration", "options": "declaration" }
+    },
+    {
+      "id": "backlog-purge",
+      "name": "purge",
+      "path": "forge backlog purge",
+      "summary": "Permanently delete closed tickets older than N days.",
+      "description": "Internal maintenance command retained for the ops team; not part of the public reference.",
+      "aliases": [],
+      "arguments": [],
+      "options": [],
+      "inherited_options": [],
+      "examples": [],
+      "hidden": true,
+      "deprecated": false,
+      "ordering": { "arguments": "declaration", "options": "declaration" }
+    },
+    {
+      "id": "route-explain",
+      "name": "explain",
+      "path": "forge route explain",
+      "summary": "Explain how a route key resolves.",
+      "description": "Prints the RACI-derived routing decision for a given route key, including responsible/consulted/informed parties.",
+      "aliases": [],
+      "arguments": [
+        { "name": "route-key", "description": "The route key to explain.", "required": true, "variadic": false }
+      ],
+      "options": [],
+      "inherited_options": ["--json"],
+      "examples": [
+        { "description": "Explain the implementation_quick route", "command": "forge route explain implementation_quick --json" }
+      ],
+      "hidden": false,
+      "deprecated": "Superseded by 'forge route explain-v2'; will be removed in a future schema_version.",
+      "ordering": { "arguments": "declaration", "options": "declaration" }
+    }
+  ]
+}
