@@ -119,6 +119,7 @@ describe('workflows.schema-v1 meta-schema', () => {
         path: 'workflows/deploy.yml',
         summary: 'Deploy the current build.',
         description: 'Runs the deploy workflow against the target environment.',
+        category: 'release',
         schema_ref: '#/definitions/deploy',
         hidden: false,
         deprecated: false,
@@ -160,6 +161,33 @@ describe('workflows.schema-v1 meta-schema', () => {
     delete manifest.workflows[0].description;
     delete manifest.workflows[0].schema_ref;
     assert.equal(validate(manifest), true, `expected hidden-only stub to validate, got: ${JSON.stringify(validate.errors)}`);
+  });
+
+  it('accepts a non-hidden workflow entry with category set', () => {
+    const validate = compileWorkflowsSchema();
+    assert.equal(validate(minimalManifest), true, `expected valid, got: ${JSON.stringify(validate.errors)}`);
+    assert.equal(minimalManifest.workflows[0].category, 'release');
+  });
+
+  it('rejects a non-hidden workflow entry missing category', () => {
+    const validate = compileWorkflowsSchema();
+    const manifest = structuredClone(minimalManifest);
+    delete manifest.workflows[0].category;
+    assert.equal(validate(manifest), false, 'expected validation to fail when a visible workflow lacks category');
+  });
+
+  it('accepts a hidden workflow entry carrying only id/name/path/hidden', () => {
+    const validate = compileWorkflowsSchema();
+    const manifest = structuredClone(minimalManifest);
+    manifest.workflows[0] = { id: 'stub', name: 'stub', path: 'workflows/stub.yml', hidden: true };
+    assert.equal(validate(manifest), true, `expected minimal hidden stub to validate, got: ${JSON.stringify(validate.errors)}`);
+  });
+
+  it('rejects a workflow entry with an unknown/extra field', () => {
+    const validate = compileWorkflowsSchema();
+    const manifest = structuredClone(minimalManifest);
+    manifest.workflows[0].unexpected_field = 'nope';
+    assert.equal(validate(manifest), false, 'expected validation to fail for an unrecognized property (additionalProperties: false)');
   });
 });
 

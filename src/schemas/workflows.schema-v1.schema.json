@@ -43,6 +43,11 @@
         "path": { "type": "string", "minLength": 1, "description": "Workflow file path or fully-qualified workflow name." },
         "summary": { "type": "string" },
         "description": { "type": "string" },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Grouping label used to cluster workflows in rendered docs navigation."
+        },
         "schema_ref": {
           "type": "string",
           "minLength": 1,
@@ -63,7 +68,7 @@
             }
           },
           "then": {
-            "required": ["id", "name", "path", "summary", "description", "schema_ref", "hidden", "deprecated"]
+            "required": ["id", "name", "path", "summary", "description", "category", "schema_ref", "hidden", "deprecated"]
           }
         }
       ]
